@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+
+    "resolveJsonModule": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noImplicitThis": true,
+    "strict": true,
+    //"verbatimModuleSyntax": true,
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+
+    "allowJs": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "dist",
+    "paths": {
+      "@components": [
+        "./src/ui/components"
+      ],
+      "@core": [
+        "./src/ui/core"
+      ],
+      "@utils": [
+        "./src/ui/utils"
+      ]
+    }
+  }
+}

@@ -1,0 +1,43 @@
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror-widget[placeholder]::before {
+  color: #ccc;
+  position: absolute;
+  content: attr(placeholder);
+  pointer-events: none;
+}
+
+.ProseMirror th,
+  .ProseMirror td {
+    min-width: 1em;
+    border: 1px solid #222;
+    padding: 3px 5px;
+  }
