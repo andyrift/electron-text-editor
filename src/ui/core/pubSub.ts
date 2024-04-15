@@ -14,10 +14,10 @@ export class PubSub {
 
   link: { [id: string] : Array<Function> } = {};
 
-  emit(event: string) {
+  emit(event: string, ...args: any[]) {
     if (this.link[event]) {
       this.link[event].forEach(callback => {
-        callback();
+        callback(...args);
       });
     }
   }

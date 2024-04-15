@@ -31,6 +31,24 @@ export const hardBreak: (hard_break: NodeType) => Command = (hard_break) => {
   };
 }
 
+export const tab_code: Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+  if (state.selection.$from.parent != state.selection.$to.parent) return false;
+  if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
+  if (dispatch) {
+    let tr = state.tr;
+    tr.replaceSelectionWith(state.schema.text('\t'));
+    dispatch(tr.scrollIntoView());
+  }
+  return true;
+}
+
+export const shift_tab_code: Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+  if (state.selection.$from.parent != state.selection.$to.parent) return false;
+  if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
+  if (dispatch) { }
+  return true;
+}
+
 export const horizontalRule: (horizontal_rule: NodeType) => Command = (horizontal_rule) => {
   return (state, dispatch) => {
     if (dispatch) {

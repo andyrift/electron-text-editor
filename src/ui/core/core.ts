@@ -2,6 +2,7 @@ import { Settings, settings } from "./settings";
 
 import { PageManager } from "./pageManager";
 import { Editor } from "./editor"
+import { Page } from "@types";
 
 export class Core {
   private pageManager: PageManager;
@@ -47,18 +48,27 @@ export class Core {
 
   async openPage(id: number): Promise<boolean> {
     let page = await this.pageManager.getPage(id);
+    if (!page) return false
     this.pageManager.currentPage.value = {
       id: page.id,
-      title: page.title
+      title: page.title,
+      folder: page.folder
     }
-    this.editor.putPage(page);
+    this.editor.putPage(page.data);
     return true;
   }
 
   async saveCurrentPage(): Promise<boolean> {
-    let page = this.editor.getPage();
-    if(page) return this.pageManager.savePage(page);
-    return false;
+    if (!this.pageManager.currentPage.value) return false;
+    let pageEditor = this.editor.getPage();
+    if (!pageEditor) return false;
+    let page: Page = {
+      id: this.pageManager.currentPage.value.id,
+      data: pageEditor.data,
+      title: pageEditor.title,
+      folder: this.pageManager.currentPage.value.folder,      
+    }
+    return this.pageManager.savePage(page);
   }
 
   async deleteCurrentPage(): Promise<boolean> {
@@ -79,5 +89,11 @@ export class Core {
       }
       return false;
     } else return this.pageManager.deletePage(id);
+  }
+
+  async changeToNewFolder(pageid: number): Promise<boolean> {
+    let folderid = await this.pageManager.createFolder();
+    if (folderid) return this.pageManager.changeFolder(pageid, folderid);
+    return false
   }
 }

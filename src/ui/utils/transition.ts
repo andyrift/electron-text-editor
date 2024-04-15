@@ -73,9 +73,9 @@ export class FixedSquaredTransition extends FixedTransition {
   }
   step(up: boolean): number {
     if (up) {
-      return this.c2 + 2 * this.c * Math.sqrt(this.to - this.current);
+      return Math.max(this.c2 + 2 * this.c * Math.sqrt(this.to - this.current), 0.01);
     } else {
-      return - this.c2 + 2 * this.c * Math.sqrt(this.current - this.from);
+      return Math.max(- this.c2 + 2 * this.c * Math.sqrt(this.current - this.from), 0.01);
     }
   }
 }

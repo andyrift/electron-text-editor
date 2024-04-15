@@ -1,25 +1,18 @@
-export type Page = {
-  id: number;
-  data: any;
-  title: string | null;
-}
-
-export type PageData = {
-  id: number;
-  data: any;
-}
-
-export type PageInfo = {
-  id: number;
-  title: string | null;
-}
+import type { Folder, Page, PageData, PageInfo, StateData } from "@types";
 
 import { ref } from "vue";
+import { PubSub } from "./pubSub";
 
 export class PageManager {
 
+  pubSub = PubSub.getInstance();
+  folders = ref<Folder[]>([]);
   pages = ref<PageInfo[]>([]);
+  rootPages = ref<number[]>([]);
+  pagesDict = ref(new Map<number, PageInfo>());
+  foldersDict = ref(new Map<number, Folder>());
   currentPage = ref<PageInfo | null>(null);
+  folderContents = ref<{ [id: number]: number[] }>({});
 
   private static _instance: PageManager;
 
@@ -35,41 +28,86 @@ export class PageManager {
 
   update = async () => {
     let pages = await this.getAllPagesInfo()
-    if (pages.length < 0) {
-      pages.push({ id: 1, title: null })
-      pages.push({ id: 2, title: "wa" })
-      pages.push({ id: 2, title: "wawa" })
-    }
+    let folders = await this.getAllFolders()
     this.pages.value = pages;
+    this.rootPages.value = [];
+    this.folders.value = folders;
+    this.folderContents.value = {};
+    folders.forEach(folder => {
+      this.folderContents.value[folder.id] = [];
+      this.foldersDict.value.set(folder.id, folder);
+    })
+    pages.forEach(page => {
+      this.pagesDict.value.set(page.id, page);
+      if (page.folder) {
+        this.folderContents.value[page.folder].push(page.id)
+      } else {
+        this.rootPages.value.push(page.id)
+      }
+    })
+  };
+
+  getAllFolders: () => Promise<Folder[]> = async () => {
+    let ans = await window.api.getAllFolders();
+
+    if (ans.status && ans.res) {
+      return ans.res;
+    }
+    return [];
+  };
+
+  async createFolder(): Promise<number | null> {
+    let ans = await window.api.createFolder();
+    if (ans.status && ans.res) {
+      return ans.res.id
+    }
+    return null
+  };
+
+  async deleteFolder(id: number): Promise<boolean> {
+    let ans = await window.api.deleteFolder(id);
+    await this.update();
+    return ans.status;
+  };
+
+  renameFolder: (id: number, newName: string | null) => Promise<boolean> = async (id, newName) => {
+    let ans = await window.api.renameFolder({ id, name: newName });
+    await this.update();
+    return ans.status;
+  };
+
+  async changeFolder (pageid: number, folderid: number | null): Promise<boolean> {
+    let ans = await window.api.changeFolder(pageid, folderid);
+    await this.update();
+    if (ans.status) {
+      this.pubSub.emit('change-folder', folderid);
+    }
+    return ans.status;
   };
 
   getAllPagesInfo: () => Promise<PageInfo[]> = async () => {
     let ans = await window.api.getAllPagesInfo();
 
-    if (ans.status) {
-      let pages: PageInfo[] = [];
-      ans.res.forEach((page: PageInfo) => {
-        pages.push({ id: page.id, title: page.title });
-      });
-      return pages;
+    if (ans.status && ans.res) {
+      return ans.res;
     }
     return [];
   };
 
-  getPageData: (id: number) => Promise<PageData> = async (id) => {
+  getPageData: (id: number) => Promise<PageData | null> = async (id) => {
     let ans = await window.api.getPageData(id);
-    if (ans.status) {
+    if (ans.status && ans.res) {
       return { id, data: ans.res.data };
     }
-    return { id, data: null };
+    return null;
   };
 
-  getPage: (id: number) => Promise<Page> = async (id) => {
+  getPage: (id: number) => Promise<Page | null> = async (id) => {
     let ans = await window.api.getPage(id);
-    if (ans.status) {
-      return { id, data: ans.res.data, title: ans.res.title };
+    if (ans.status && ans.res) {
+      return { id, data: ans.res.data, title: ans.res.title, folder: ans.res.folder };
     }
-    return { id, data: null, title: null };
+    return null;
   };
 
   savePage: (page: Page) => Promise<boolean> = async (page) => {
@@ -78,9 +116,9 @@ export class PageManager {
     return ans.status;
   };
 
-  createPage: (data: any) => Promise<number> = async (data) => {
+  createPage: (data: StateData) => Promise<number | null> = async (data) => {
     let ans = await window.api.createPage(data);
-    if (ans.status) {
+    if (ans.status && ans.res) {
       this.update();
       return ans.res.id
     }
@@ -88,6 +126,8 @@ export class PageManager {
   };
 
   deletePage: (id: number) => Promise<boolean> = async (id) => {
+    this.pagesDict.value.delete(id);
+    this.pagesDict.value
     let ans = await window.api.deletePage(id);
     if (ans.status) this.update();
     return ans.status;

@@ -24,7 +24,9 @@ import {
   toggleMark,
   selectBlock,
   selectText,
-  insertTable
+  insertTable,
+  tab_code,
+  shift_tab_code
 } from "./rawCommands";
 
 import type { Command } from "prosemirror-state";
@@ -86,10 +88,12 @@ export class Commands {
       hardBreak(schema.nodes.hard_break)
     );
     this.tab = chainCommands(
+      tab_code,
       sinkListItem(schema.nodes.list_item),
       wrapIn(schema.nodes.blockquote)
     );
     this.shift_tab = chainCommands(
+      shift_tab_code,
       liftListItem(schema.nodes.list_item),
       lift
     );

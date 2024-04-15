@@ -17,9 +17,11 @@
           <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="core.saveCurrentPage(); showMenu = false;">
             <i class="fa-solid fa-floppy-disk mr-2"></i> Save
           </div>
-          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-            @click="core.deleteCurrentPage(); showMenu = false;">
+          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="core.deleteCurrentPage(); showMenu = false;">
             <i class="fa-solid fa-trash-can mr-2"></i> Delete
+          </div>
+          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="pubSub.emit('toggle-querier'); showMenu = false;">
+            <i class="fa-solid fa-bug mr-2"></i> Toggle Querier
           </div>
         </div>
         <div class="p-2">
@@ -40,9 +42,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Core, Editor } from "@core";
+import { Core, Editor, PubSub } from "@core";
 const core = Core.getInstance();
 const editor = Editor.getInstance();
+const pubSub = PubSub.getInstance();
 
 const showMenu = ref(false);
 </script>

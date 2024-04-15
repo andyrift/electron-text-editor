@@ -23,6 +23,7 @@ export default defineConfig((env) => {
     resolve: {
       preserveSymlinks: true,
       alias: {
+        "@types": path.resolve(__dirname, './src/types'),
         "@components": path.resolve(__dirname, './src/ui/components'),
         "@core": path.resolve(__dirname, './src/ui/core'),
         "@utils": path.resolve(__dirname, './src/ui/utils'),

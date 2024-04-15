@@ -1,7 +1,7 @@
 import { EditorState, type EditorStateConfig, Plugin } from "prosemirror-state";
 import { type DirectEditorProps, EditorView } from "prosemirror-view";
 import { type Ref, onMounted, ref } from "vue";
-import type { PageData, Page } from "../pageManager";
+import type { PageEditor } from "@types";
 import { Node, Schema } from "prosemirror-model";
 
 import {
@@ -20,7 +20,6 @@ import { schema } from "./schema";
 
 import { Menu } from "./menu";
 import { Commands } from "./commands";
-import { PubSub } from "../pubSub";
 
 export class Editor {
   plugins: Plugin[];
@@ -28,7 +27,6 @@ export class Editor {
   commands: Commands;
   menu: Menu;
   view: EditorView | null = null;
-  pageid: number | null = null;
   wordCounter = ref({ words: 0, characters: 0 });
   
   private titleSubs: Array<(title:string | null) => void> = [];
@@ -131,20 +129,18 @@ export class Editor {
     return null;
   };
 
-  putPage = (page: PageData) => {
+  putPage = (data: any) => {
     if (!this.view) return;
-    this.pageid = page.id;
-    this.view.state = this.newState(this.schema.nodeFromJSON(page.data.doc));
+    this.view.state = this.newState(this.schema.nodeFromJSON(data.doc));
     this.view.dispatch(this.view.state.tr);
     this.emitTitleUpdate(this.getTitle());
   };
 
-  getPage: () => Page | null = () => {
-    if (!this.pageid || !this.view) return null;
+  getPage: () => PageEditor | null = () => {
+    if (!this.view) return null;
     return {
-      id: this.pageid,
       data: this.view.state.toJSON(),
-      title: this.getTitle()
+      title: this.getTitle(),
     }
   };
 
