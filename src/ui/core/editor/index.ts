@@ -1,3 +1,1 @@
-export * from "./schema";
-export * from "./menu"
-export * from "./editor"
+export { Editor } from './editor'

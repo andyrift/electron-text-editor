@@ -13,7 +13,6 @@ export {
 
 export {
   createParagraphNear,
-  splitBlock,
   toggleMark,
   setBlockType,
 } from "prosemirror-commands"

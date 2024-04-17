@@ -26,6 +26,11 @@ const buildKeymap = (cmd: Commands) => {
     "Shift-Tab": cmd.shift_tab,
     "Mod-[": cmd.shift_tab,
 
+    "Mod-1": cmd.setNodeColor('none'),
+    "Mod-2": cmd.setNodeColor('red'),
+    "Mod-3": cmd.setNodeColor('green'),
+    "Mod-4": cmd.setNodeColor('blue'),
+
     "Mod-b": cmd.mark.bold,
     "Mod-B": cmd.mark.bold,
     "Mod-i": cmd.mark.italic,
@@ -44,7 +49,8 @@ const buildKeymap = (cmd: Commands) => {
     "Mod-Alt-2": cmd.block.h2,
     "Mod-Alt-3": cmd.block.h3,
     "Shift-Ctrl-\\": cmd.block.code,
-    "Ctrl-m": cmd.block.table,
+    "Ctrl-m": cmd.table,
+    "Ctrl-k": cmd.columns,
   }
 
   return keymap(myKeymap);

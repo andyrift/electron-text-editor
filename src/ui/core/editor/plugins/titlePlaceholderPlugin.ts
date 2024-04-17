@@ -2,7 +2,7 @@ import { Node } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 
-export const titlePlaceholder = (text: string) => {
+export const titlePlaceholderPlugin = (text: string) => {
   return new Plugin({
     props: {
       decorations(state) {
@@ -16,7 +16,7 @@ export const titlePlaceholder = (text: string) => {
             placeholder.classList.add(..."title text-4xl font-bold".split(' '));
 
             decorations.push(
-              Decoration.widget(pos, placeholder)
+              Decoration.widget(pos+1, placeholder)
             )
           }
         }

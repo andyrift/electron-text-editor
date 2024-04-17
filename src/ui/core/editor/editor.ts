@@ -2,24 +2,30 @@ import { EditorState, type EditorStateConfig, Plugin } from "prosemirror-state";
 import { type DirectEditorProps, EditorView } from "prosemirror-view";
 import { type Ref, onMounted, ref } from "vue";
 import type { PageEditor } from "@types";
-import { Node, Schema } from "prosemirror-model";
+import { DOMSerializer, Node, Schema } from "prosemirror-model";
 
 import {
+  dragPlugin,
   keymapPlugin,
   menuPlugin,
   wordCountPlugin,
   dropCursor,
   gapCursor,
   hintPlugin,
-  titlePlaceholder,
-  titleUpdate,
-  tableEditing
+  titlePlaceholderPlugin,
+  tableEditing,
+  titleUpdatePlugin,
+  tabInterceptPlugin,
+  stateUpdatePlugin,
+  listFixPlugin,
 } from "./plugins";
 
 import { schema } from "./schema";
 
 import { Menu } from "./menu";
 import { Commands } from "./commands";
+import { CheckView } from "./nodeViews";
+import { TableView, columnResizing } from "prosemirror-tables";
 
 export class Editor {
   plugins: Plugin[];
@@ -28,8 +34,9 @@ export class Editor {
   menu: Menu;
   view: EditorView | null = null;
   wordCounter = ref({ words: 0, characters: 0 });
-  
-  private titleSubs: Array<(title:string | null) => void> = [];
+  private serializer: DOMSerializer;
+
+  private titleSubs: Array<(title: string | null) => void> = [];
   private useSubs: Array<() => void> = [];
   private updSubs: Array<() => void> = [];
 
@@ -51,16 +58,34 @@ export class Editor {
       wordCountPlugin(this.wordCounter),
       dropCursor(),
       gapCursor(),
+      titlePlaceholderPlugin("Untitled"),
       hintPlugin("Write something, '/' for commands..."),
-      titlePlaceholder("Untitled"),
-      titleUpdate(this.emitTitleUpdate),
-      tableEditing()
+      titleUpdatePlugin(this.emitTitleUpdate),
+      stateUpdatePlugin(this.emitStateUpdate),
+      dragPlugin(),
+      listFixPlugin(),
+      columnResizing(),
+      tableEditing({ allowTableNodeSelection: true }),
+      tabInterceptPlugin(),
     ];
+    this.serializer = DOMSerializer.fromSchema(this.schema);
   };
 
   private emitTitleUpdate = (title: string | null) => {
     this.titleSubs.forEach(callback => {
       callback(title);
+    })
+  }
+
+  private emitStateUpdate = () => {
+    this.updSubs.forEach(callback => {
+      callback();
+    })
+  }
+
+  private emitUseView() {
+    this.useSubs.forEach(callback => {
+      callback();
     })
   }
 
@@ -85,26 +110,23 @@ export class Editor {
   };
 
   private createView = (editor: Element) => {
-    const emitUpdate = () => {
-      this.updSubs.forEach(callback => {
-        callback();
-      })
-    }
+    let serializer = this.serializer;
+    let cmd = this.commands
     const view = new EditorView(editor, {
       state: this.newState(),
-      dispatchTransaction(transaction) {
-        const newState = view.state.apply(transaction);
-        view.updateState(newState);
-        emitUpdate();
+      nodeViews: {
+        check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
+        table(node) { return new TableView(node, 40) },
+        //paragraph(node, view, getPos) { return new ParagraphView(node, view, getPos) },
+        //code_block(node, view, getPos) { return new CodeblockView(node, view, getPos) }, 
+        //heading(node, view, getPos) { return new HeadingView(node, view, getPos) },
+        //table(node, view, getPos) { return new TableView(node, view, getPos) },
       },
-      handleKeyDown(view, event) {
-        if (event.key == "Tab") {
-          event.preventDefault();
-        }
-      }
     } as DirectEditorProps);
     return view;
   };
+
+
 
   useView = (editor: Ref<Element | null>) => {
     document.execCommand('enableObjectResizing', false, 'false');
@@ -112,9 +134,7 @@ export class Editor {
     onMounted(() => {
       if (editor.value) {
         this.view = this.createView(editor.value);
-        this.useSubs.forEach(callback => {
-          callback();
-        })
+        this.emitUseView();
       }
       else throw new Error("No Editor Element Provided");
     });

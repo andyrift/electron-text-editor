@@ -31,15 +31,26 @@
 }
 
 .ProseMirror-widget[placeholder]::before {
-  color: #ccc;
+  opacity: 0.3;
   position: absolute;
   content: attr(placeholder);
   pointer-events: none;
 }
 
-.ProseMirror th,
-  .ProseMirror td {
-    min-width: 1em;
-    border: 1px solid #222;
-    padding: 3px 5px;
-  }
+.ProseMirror-widget::before {
+  position: absolute;
+}
+
+.ProseMirror th, .ProseMirror td {
+  min-width: 1em;
+  border: 1px solid #222;
+  padding: 3px 5px;
+}
+
+pre {
+  tab-size: 2; /* Set tab size to 4 characters wide */
+}
+
+.ProseMirror table {
+  overflow: visible;
+}

@@ -5,6 +5,8 @@ import { ref, type Ref } from "vue";
 import { MarkType, NodeType, Schema, type Attrs } from "prosemirror-model";
 import type { Command } from "prosemirror-state";
 
+import { colors } from "@core";
+
 export type MenuCommands = { [id: string]: Command };
 export type MenuMarks = { [id: string]: MarkType };
 export type MenuNodes = { [id: string]: { nodetype: NodeType, attrs?: Attrs } };
@@ -21,14 +23,18 @@ export type MenuStates = Ref<{
 
 export class Menu {
   states: MenuStates;
-  mcommands: MenuCommands;
+  commands: MenuCommands;
   nodes: MenuNodes;
   marks: MenuMarks;
-  mcommandSetters: MenuSets;
-  nodeSets: MenuSets;
-  markSets: MenuSets;
+  commandSetters: MenuSets;
+  nodeSetters: MenuSets;
+  markSetters: MenuSets;
   buttons: MenuButtons;
-  constructor(schema: Schema, commands: Commands) {
+  private cmd: Commands;
+  constructor(schema: Schema, cmd: Commands) {
+
+    this.cmd = cmd;
+
     const states: MenuStates = ref({});
 
     states.value["bold"] = { mark: false, applicable: true };
@@ -42,35 +48,47 @@ export class Menu {
     states.value["h1"] = { applicable: true, node: false };
     states.value["h2"] = { applicable: true, node: false };
     states.value["h3"] = { applicable: true, node: false };
+    states.value["check"] = { applicable: true, node: false };
     states.value["code_block"] = { applicable: true, node: false };
     states.value["ol"] = { applicable: true, node: false };
     states.value["ul"] = { applicable: true, node: false };
     states.value["indent"] = { applicable: true };
     states.value["outdent"] = { applicable: true };
 
+    states.value["hr"] = { applicable: true };
+    states.value["table"] = { applicable: true };
+    states.value["columns"] = { applicable: true };
+
+
     this.states = states;
 
-    const mcommands: MenuCommands = {};
+    const commands: MenuCommands = {};
 
-    mcommands["bold"] = commands.mark.bold;
-    mcommands["italic"] = commands.mark.italic;
-    mcommands["underline"] = commands.mark.underline;
-    mcommands["strikethrough"] = commands.mark.strikethrough;
-    mcommands["code"] = commands.mark.code;
+    commands["bold"] = cmd.mark.bold;
+    commands["italic"] = cmd.mark.italic;
+    commands["underline"] = cmd.mark.underline;
+    commands["strikethrough"] = cmd.mark.strikethrough;
+    commands["code"] = cmd.mark.code;
 
-    mcommands["paragraph"] = commands.block.paragraph;
-    mcommands["h1"] = commands.block.h1;
-    mcommands["h2"] = commands.block.h2;
-    mcommands["h3"] = commands.block.h3;
-    mcommands["code_block"] = commands.block.code;
+    commands["paragraph"] = cmd.block.paragraph;
+    commands["h1"] = cmd.block.h1;
+    commands["h2"] = cmd.block.h2;
+    commands["h3"] = cmd.block.h3;
+    commands["check"] = cmd.block.check;
+    commands["code_block"] = cmd.block.code;
 
-    mcommands["ul"] = commands.bulletList;
-    mcommands["ol"] = commands.orderedList;
+    commands["ul"] = cmd.bulletList;
+    commands["ol"] = cmd.orderedList;
 
-    mcommands["indent"] = commands.tab;
-    mcommands["outdent"] = commands.shift_tab;
+    commands["indent"] = cmd.tab;
+    commands["outdent"] = cmd.shift_tab;
 
-    this.mcommands = mcommands;
+    commands["hr"] = cmd.horizontalRule;
+    commands["table"] = cmd.table;
+    commands["columns"] = cmd.columns;
+
+
+    this.commands = commands;
 
 
     const nodes: MenuNodes = {};
@@ -80,6 +98,7 @@ export class Menu {
     nodes["h1"] = { nodetype: schema.nodes.heading, attrs: { level: 1 } };
     nodes["h2"] = { nodetype: schema.nodes.heading, attrs: { level: 2 } };
     nodes["h3"] = { nodetype: schema.nodes.heading, attrs: { level: 3 } };
+    nodes["check"] = { nodetype: schema.nodes.check };
     nodes["code_block"] = { nodetype: schema.nodes.code_block };
 
     nodes["ul"] = { nodetype: schema.nodes.bullet_list };
@@ -100,22 +119,22 @@ export class Menu {
 
 
     const commandSets: MenuSets = {};
-    for (let key in this.mcommands) {
+    for (let key in this.commands) {
       commandSets[key] = (state) => { this.states.value[key].applicable = state }
     }
-    this.mcommandSetters = commandSets;
+    this.commandSetters = commandSets;
 
-    const markSets: MenuSets = {};
+    const markSetters: MenuSets = {};
     for (let key in this.marks) {
-      markSets[key] = (state) => { this.states.value[key].mark = state }
+      markSetters[key] = (state) => { this.states.value[key].mark = state }
     }
-    this.markSets = markSets;
+    this.markSetters = markSetters;
 
-    const nodeSets: MenuSets = {};
+    const nodeSetters: MenuSets = {};
     for (let key in this.nodes) {
-      nodeSets[key] = (state) => { this.states.value[key].node = state }
+      nodeSetters[key] = (state) => { this.states.value[key].node = state }
     }
-    this.nodeSets = nodeSets;
+    this.nodeSetters = nodeSetters;
 
     const buttons: MenuButtons = ref({});
     this.buttons = buttons;
@@ -126,7 +145,7 @@ export class Menu {
     const createNormal = (key: string) => {
       this.buttons.value[key] = () => {
         editorView.focus();
-        this.mcommands[key](editorView.state, editorView.dispatch, editorView);
+        this.commands[key](editorView.state, editorView.dispatch, editorView);
       }
     };
 
@@ -134,19 +153,33 @@ export class Menu {
       "bold", 
       "italic", 
       "underline", 
-      "paragraph", 
       "strikethrough", 
       "code", 
+      
+      "paragraph", 
       "h1", 
       "h2", 
       "h3", 
+      "check",
       "code_block", 
+
       "ol", 
       "ul", 
       "indent", 
-      "outdent"
+      "outdent",
+
+      "hr",
+      "table",
+      "columns"
     ];
 
     normally.forEach(createNormal);
+
+    for (let color in colors) {
+      this.buttons.value["setcolor_" + color] = () => {
+        editorView.focus();
+        this.cmd.setNodeColor(color)(editorView.state, editorView.dispatch, editorView);
+      }
+    }
   };
 }

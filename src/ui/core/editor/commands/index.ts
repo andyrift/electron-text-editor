@@ -26,32 +26,48 @@ import {
   selectText,
   insertTable,
   tab_code,
-  shift_tab_code
+  shift_tab_code,
+  insertColumns,
+  deleteColumns,
+  setNodeColor,
+  toggleCheck
 } from "./rawCommands";
 
 import type { Command } from "prosemirror-state";
 import { Schema } from "prosemirror-model";
 
 export interface Commands {
+
+  setNodeColor: (arg0: string) => Command
+
   del: Command;
   backspace: Command;
   enter: Command;
   ctrl_enter: Command;
+
   tab: Command;
   shift_tab: Command;
+
   selectAll: Command;
   selectSteps: Command;
+
   bulletList: Command;
   orderedList: Command;
-  horizontalRule: Command;
   blockquote: Command;
+  
+  horizontalRule: Command;
+  table: Command;
+  columns: Command;
+
+  toggleCheck: (pos: number) => Command;
+
   block: {
     paragraph: Command;
     h1: Command;
     h2: Command;
     h3: Command;
     code: Command;
-    table: Command;
+    check: Command;
   };
   mark: {
     bold: Command;
@@ -64,12 +80,14 @@ export interface Commands {
 
 export class Commands {
   constructor(schema: Schema) {
+    this.setNodeColor = setNodeColor
     this.del = chainCommands(
       deleteSelection,
       joinForward,
       selectNodeForward
     );
     this.backspace = chainCommands(
+      deleteColumns,
       deleteSelection,
       joinBackward,
       selectNodeBackward
@@ -80,7 +98,7 @@ export class Commands {
       splitListItem(schema.nodes.list_item),
       createParagraphNear,
       liftEmptyBlock,
-      splitBlock
+      splitBlock(schema)
     );
     this.ctrl_enter = chainCommands(
       exitTitle,
@@ -107,8 +125,10 @@ export class Commands {
     );
     this.bulletList = wrapInList(schema.nodes.bullet_list);
     this.orderedList = wrapInList(schema.nodes.ordered_list);
-    this.horizontalRule = horizontalRule(schema.nodes.horizontal_rule);
     this.blockquote = wrapIn(schema.nodes.blockquote);
+    this.horizontalRule = horizontalRule(schema.nodes.horizontal_rule);
+    this.table = insertTable(2, 3),
+    this.columns = insertColumns()
 
     this.block = {
       paragraph: setBlockType(schema.nodes.paragraph),
@@ -116,7 +136,7 @@ export class Commands {
       h2: setBlockType(schema.nodes.heading, { level: 2 }),
       h3: setBlockType(schema.nodes.heading, { level: 3 }),
       code: setBlockType(schema.nodes.code_block),
-      table: insertTable(),
+      check: setBlockType(schema.nodes.check),
     };
 
     this.mark = {
@@ -126,6 +146,8 @@ export class Commands {
       strikethrough: toggleMark(schema.marks.del),
       code: toggleMark(schema.marks.code)
     }
+
+    this.toggleCheck = toggleCheck
 
   }
 }

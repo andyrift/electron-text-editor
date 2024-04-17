@@ -9,23 +9,16 @@ export const hintPlugin = (text: string) => {
         const decorations = [] as Decoration[];
 
         const decorate = (node: Node, pos: number) => {
-          let flag = true;
-          state.doc.nodesBetween(state.selection.$anchor.start(), state.selection.$anchor.end(), node => {
-            if (node.type == state.schema.nodes.table) flag = false;
-          })
-          if (
-            node.type == state.schema.nodes.paragraph && 
-            state.selection.$anchor.parent == node &&
-            state.selection.empty && flag &&
-            node.childCount === 0) {
+          if (state.selection.empty && node.type == state.schema.nodes.paragraph && 
+            node.childCount === 0 && state.selection.$from.pos == pos + 1) {
 
             let placeholder = document.createElement("span");
             placeholder.setAttribute('placeholder', text);
-            placeholder.classList.add(..."paragraph".split(' '));
+            placeholder.classList.add(..."whitespace-nowrap text-ellipsis overflow-hidden".split(' '));
             
-            decorations.push(
-              Decoration.widget(pos, placeholder)
-            )
+            decorations.push(Decoration.widget(pos+1, placeholder))
+
+            return false;
           }
         }
 

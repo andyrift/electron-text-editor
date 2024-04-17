@@ -15,6 +15,12 @@ module.exports = {
     },
     fontFamily: {
       //Roboto: ["Roboto, sans-serif"],
-    }
+    },
   },
+  safelist: [
+    {
+      pattern: /bg-(red|green|blue|gray|yellow|orange|pink|purple|cyan)-300/,
+    },
+    'bg-transparent'
+  ],
 }

@@ -1,5 +1,6 @@
 <template>
   <div class="text-gray-700 shadow-uni bg-white"
+    @drop="handleDrop" @dragover="handleDragover"
     :class="pageManager.folderContents.value[id].length == 0 ? 'text-opacity-50' : ''">
     <div class="px-4 py-2 flex" @mouseenter="hover = true" @mouseleave="hover = false">
       <div class="cursor-pointer grow select-none whitespace-nowrap text-ellipsis overflow-hidden" @click="toggleOpen">
@@ -130,6 +131,21 @@ const save = () => {
     if (!status) updateInput();
   });
 }
+
+const handleDragover = (e: DragEvent) => {
+  e.preventDefault()
+}
+
+const handleDrop = (e: DragEvent) => {
+  e.stopPropagation()
+  if (e.dataTransfer && e.dataTransfer.getData('page')) {
+    let id = parseInt(e.dataTransfer.getData('page'));
+    if (id && props.id) {
+      pageManager.changeFolder(id, props.id);
+    }
+  }
+}
+
 </script>
 
 <style>

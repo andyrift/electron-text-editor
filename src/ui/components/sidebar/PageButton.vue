@@ -1,5 +1,6 @@
 <template>
-  <div @click="() => { emit('click'); }" @mouseenter="hover = true" @mouseleave="hover = false"
+  <div @click="() => { emit('click'); }" @mouseenter="hover = true" @mouseleave="hover = false" draggable="true"
+    @dragover="handleDragover" @drop="handleDrop" @dragstart="handleDragStart"
     class="px-4 py-2 cursor-pointer overflow-visible  text-gray-900 border-b border-b-gray-300 /border-x-2 border-x-gray-500 hover:bg-gray-200 text-left whitespace-pre hover:text-wrap"
     :class="currentPage && page && page.id == currentPage.id ? 'bg-gray-200' : 'bg-white'">
     <div class="flex w-full">
@@ -18,7 +19,7 @@
         h-fit outline-none" @click="(e) => { e.stopPropagation(); folderMenu = true; }">
           <i class="fa-solid fa-folder"></i>
         </button>
-        <div v-if="folderMenu" class="fixed z-10 top-0 left-0 w-screen h-screen bg-black opacity-0"
+        <div v-if="folderMenu" class="fixed cursor-default z-10 top-0 left-0 w-screen h-screen bg-black opacity-0"
           @click="(e) => { e.stopPropagation(); folderMenu = false; hover = false; }">
         </div>
         <Transition name="fadequick">
@@ -83,5 +84,25 @@ const props = defineProps<{
   page: PageInfo | null,
   currentPage: PageInfo | null,
 }>();
+
+const handleDragStart = (e: DragEvent) => {
+  if (e.dataTransfer && props.page) {
+    e.dataTransfer.setData('page', props.page.id.toString())
+  }
+}
+
+const handleDragover = (e: DragEvent) => {
+  e.preventDefault()
+}
+
+const handleDrop = (e: DragEvent) => {
+  e.stopPropagation()
+  if (e.dataTransfer && e.dataTransfer.getData('page')) {
+    let id = parseInt(e.dataTransfer.getData('page'));
+    if (id && props.page) {
+      pageManager.changeFolder(id, props.page.folder);
+    }
+  }
+}
 
 </script>

@@ -1,9 +1,10 @@
-export * from "./examplePlugins";
+export * from "./testPlugins";
+export * from "./smallPlugins";
 export * from "./keymapPlugin";
 export * from "./menuPlugin";
 export * from "./wordCountPlugin";
 export * from "./hintPlugin";
-export * from "./titlePlaceholder";
-export { dropCursor } from "prosemirror-dropcursor";
+export * from "./titlePlaceholderPlugin";
+export { dropCursor } from "./dropCursor";
 export { gapCursor } from "prosemirror-gapcursor";
 export { tableEditing } from "prosemirror-tables";

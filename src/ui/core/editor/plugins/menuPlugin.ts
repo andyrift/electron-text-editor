@@ -64,21 +64,21 @@ export const menuPlugin = (menu : Menu) => {
       let markActive: MenuView["markActive"] = [];
       let nodeActive: MenuView["nodeActive"] = [];
 
-      for (let key in menu.mcommands) {
-        let command = menu.mcommands[key];
-        let set = menu.mcommandSetters[key];
+      for (let key in menu.commands) {
+        let command = menu.commands[key];
+        let set = menu.commandSetters[key];
         commandApplicable.push({ command, set });
       }
 
       for (let key in menu.marks) {
         let marktype = menu.marks[key];
-        let set = menu.markSets[key];
+        let set = menu.markSetters[key];
         markActive.push({ marktype, set });
       }
 
       for (let key in menu.nodes) {
         let { nodetype, attrs } = menu.nodes[key];
-        let set = menu.nodeSets[key];
+        let set = menu.nodeSetters[key];
         nodeActive.push({ nodetype, attrs, set });
       }
 

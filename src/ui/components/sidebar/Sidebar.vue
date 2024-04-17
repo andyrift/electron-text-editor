@@ -10,7 +10,8 @@
         <i class="fa-solid fa-angles-left cursor-pointer mr-3 hover:bg-gray-200 my-2 py-2 px-3 rounded"
           @click="pubSub.emit('hide-sidebar')"></i>
       </div>
-      <div class="sidebar h-full pb-2 px-3 overflow-y-auto bg-gray-100 font-medium py-2">
+      <div class="sidebar h-full pb-2 px-3 overflow-y-auto bg-gray-100 font-medium py-2" @drop="handleDrop"
+        @dragover="handleDragover">
         <div class="shadow-uni">
           <PageButton v-for="id in pageManager.rootPages.value" :key="id"
             :page="pageManager.pagesDict.value.get(id) || null" :currentPage="pageManager.currentPage.value"
@@ -65,6 +66,19 @@ pubSub.subscribe('show-sidebar', () => {
     pubSub.emit('sidebar-shown');
   })
 });
+
+const handleDragover = (e: DragEvent) => {
+  e.preventDefault()
+}
+const handleDrop = (e: DragEvent) => {
+  e.stopPropagation()
+  if (e.dataTransfer && e.dataTransfer.getData('page')) {
+    let id = parseInt(e.dataTransfer.getData('page'));
+    if (id) {
+      pageManager.changeFolder(id, null);
+    }
+  }
+}
 
 </script>
 
