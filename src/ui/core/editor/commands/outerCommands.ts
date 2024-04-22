@@ -26,3 +26,25 @@ export {
   joinDown,
   wrapIn,
 } from "prosemirror-commands"
+
+export { 
+  undo, 
+  redo 
+} from "prosemirror-history"
+
+export { 
+  addColumnBefore,
+  addColumnAfter,
+  deleteColumn,
+  addRowBefore,
+  addRowAfter,
+  deleteRow,
+  mergeCells,
+  splitCell,
+  toggleHeaderCell,
+  toggleHeaderColumn,
+  toggleHeaderRow,
+  goToNextCell,
+  deleteTable
+
+} from "prosemirror-tables"

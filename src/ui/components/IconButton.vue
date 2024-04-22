@@ -10,7 +10,7 @@
 const props = withDefaults(defineProps<{
   hover?: boolean,
   stopProp?: boolean,
-  onClick?: (e?: MouseEvent) => void
+  newOnClick?: (e?: MouseEvent) => void
 }>(), {
   hover: true,
   stopProp: true,
@@ -18,6 +18,6 @@ const props = withDefaults(defineProps<{
 
 const handleClick = (e: MouseEvent) => {
   if (props.stopProp) e.stopPropagation()
-  if (props.onClick) props.onClick(e)
+  if (props.newOnClick) props.newOnClick(e)
 }
 </script>

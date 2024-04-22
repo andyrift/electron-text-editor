@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div :class="modifiers" class="py-1 px-2 flex items-center hover:bg-gray-200 cursor-pointer rounded">
+    <div :class="modifiers" class="py-1 px-1.5 flex items-center hover:bg-gray-200 cursor-pointer rounded">
       <slot name="element">
         Element
       </slot>
-      <div class="grow"></div>
-      <i v-show=active class="fa-solid fa-check ml-2"></i>
+      <div class="grow mr-2"></div>
+      <i v-show=active class="fa-solid fa-check"></i>
       <i v-if="chevron" class="fa-solid fa-chevron-right"></i>
     </div>
     <slot name="menu"></slot>

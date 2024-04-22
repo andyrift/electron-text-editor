@@ -7,24 +7,22 @@
         <i class="fa-solid fa-folder mr-3"></i>
         <span>{{ input || "Unnamed" }}</span>
       </div>
-      <button :class="hover ? 'opacity-30 hover:opacity-100' : 'opacity-0'" class=" ml-1 transition-opacity
-        h-fit outline-none" @click="(e) => { e.stopPropagation(); pageManager.deleteFolder(id) }">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
+      <IconButton :hover="hover" :newOnClick="() => {pageManager.deleteFolder(id)}">
+          <i class="fa-solid fa-trash-can"></i>
+        </IconButton>
       <div class="w-2 flex-none"></div>
       <div class="relative">
-        <button :class="hover ? 'opacity-30 hover:opacity-100' : 'opacity-0'"
-          class="transition-opacity ml-1 h-fit outline-none" @click="(e) => { e.stopPropagation(); toggleRename() }">
+        <IconButton :hover="hover" :newOnClick="toggleRename">
           <i class="fa-solid fa-pen"></i>
-        </button>
+        </IconButton>
         <div v-if="showRename" class="fixed z-10 top-0 left-0 w-screen h-screen bg-black opacity-0"
           @click="showRename = false; hover = false; updateInput()">
         </div>
         <Transition name="fadequick">
-          <div v-if="showRename" class="absolute right-0 z-20 bg-white p-2 shadow-unilg mt-2 rounded flex items-center">
+          <div v-if="showRename" class="absolute right-0 z-20 bg-white p-2 shadow-unilg mt-2 rounded-md border border-gray-300 flex items-center">
             <input ref="inp" v-model="input" class="border-2 border-gray-300 rounded p-1 
           outline-none" type="text" @keydown="(e: KeyboardEvent) => { if (e.key == 'Enter') save() }"></input>
-            <i class="rounded mx-1 p-1 text-xl fa-solid fa-check opacity-30 hover:opacity-100 transition-opacit cursor-pointer"
+            <i class="rounded mx-1 p-1 text-xl fa-solid fa-check opacity-30 hover:opacity-100 transition-opacity cursor-pointer"
               @click="save"></i>
           </div>
         </Transition>
@@ -46,6 +44,8 @@
 import { PageManager, PubSub } from '@core';
 import { nextTick, ref, watch } from 'vue';
 import { FixedSquaredTransition } from '@utils';
+
+import { IconButton } from '@components';
 
 const height = ref(0);
 
@@ -141,7 +141,7 @@ const handleDrop = (e: DragEvent) => {
   if (e.dataTransfer && e.dataTransfer.getData('page')) {
     let id = parseInt(e.dataTransfer.getData('page'));
     if (id && props.id) {
-      pageManager.changeFolder(id, props.id);
+      pageManager.changePageFolder(id, props.id);
     }
   }
 }

@@ -12,25 +12,25 @@ export const colors : { [id: string] : Color } = {
     name: "Red",
     class: "red-300"
   },
-  'green': {
-    name: "Green",
-    class: "green-300"
-  },
-  'blue': {
-    name: "Blue",
-    class: "blue-300"
-  },
-  'cyan': {
-    name: "Cyan",
-    class: "cyan-300"
+  'orange': {
+    name: "Orange",
+    class: "orange-300"
   },
   'yellow': {
     name: "Yellow",
     class: "yellow-300"
   },
-  'orange': {
-    name: "Orange",
-    class: "orange-300"
+  'green': {
+    name: "Green",
+    class: "green-300"
+  },
+  'cyan': {
+    name: "Cyan",
+    class: "cyan-300"
+  },
+  'blue': {
+    name: "Blue",
+    class: "blue-300"
   },
   'purple': {
     name: "Purple",

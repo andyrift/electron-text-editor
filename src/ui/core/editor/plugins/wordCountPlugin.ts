@@ -5,7 +5,14 @@ import type { Ref } from "vue";
 const countWords = (editorView: EditorView) => {
   let paraCount = 0;
   let wordCount = 0;
-  Object.keys(editorView.dom.childNodes).forEach((value, key: number) => {
+  editorView.state.doc.descendants((node, pos) => {
+    if (node.text) {
+      //if (node.text.trim().length > 0) paraCount += 1;
+      let split = node.text.replace(/[ ]{2,}/gi, " ").trim().split(" ")
+      if (!(split.length == 1) || !(split[0].length == 0)) wordCount += split.length;
+    }
+  })
+  /*Object.keys(editorView.dom.childNodes).forEach((value, key: number) => {
     let maybePara = editorView.dom.children[key];
     if (maybePara.textContent) {
       let tag = maybePara.tagName;
@@ -16,7 +23,7 @@ const countWords = (editorView: EditorView) => {
       let split = maybePara.textContent.replace(/[ ]{2,}/gi, " ").trim().split(" ");
       if (!(split.length == 1) || !(split[0].length == 0)) wordCount += split.length;
     }
-  });
+  });*/
   return paraCount + wordCount;
 }
 
@@ -24,22 +31,22 @@ class CounterView {
   editTimeout: NodeJS.Timeout | undefined;
   canWords = true;
   canCharacters = true;
-  lastView: EditorView | null = null;
+  view: EditorView | null = null;
   counter: Ref<{ words: number, characters: number }>;
   constructor(counter: Ref<{ words: number, characters: number }>) {
     this.counter = counter;
   };
   countWords() {
-    if (!this.lastView) { return; }
-    this.counter.value.words = countWords(this.lastView);
+    if (!this.view) { return; }
+    this.counter.value.words = countWords(this.view);
   };
   countCharacters() {
-    if (!this.lastView) return;
-    let text = this.lastView.dom.textContent;
+    if (!this.view) return;
+    let text = this.view.state.doc.textContent;
     this.counter.value.characters = text? text.length : 0;
   };
   update(editorView: EditorView) {
-    this.lastView = editorView;
+    this.view = editorView;
     clearTimeout(this.editTimeout);
     this.editTimeout = setTimeout(() => {
       this.countWords();

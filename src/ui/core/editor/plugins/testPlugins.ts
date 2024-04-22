@@ -1,6 +1,7 @@
 import { Node } from "prosemirror-model";
 import { NodeSelection, Plugin, PluginKey, TextSelection } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
+import { Ref } from "vue";
 
 export const statePlugin = () => {
   return new Plugin({
@@ -107,7 +108,7 @@ export const placeholderPlugin = (titleText: string, paragraphText: string) => {
   })
 }
 
-export const dragPlugin = () => {
+export const oldDragPlugin = () => {
   return new Plugin({
     props: {
       handleDrop(view, e, slice) {
@@ -200,6 +201,7 @@ export const dragPlugin = () => {
             state.schema.nodes.horizontal_rule,
             state.schema.nodes.check,
             state.schema.nodes.blockquote,
+            state.schema.nodes.page_link
           ]
           
           if (types.includes(node.type)) {
@@ -241,5 +243,130 @@ export const dragPlugin = () => {
         return DecorationSet.create(state.doc, decorations)
       },
     },
+  })
+}
+
+export const dragPlugin = () => {
+  return new Plugin({
+    props: {
+      handleDrop(view, e, slice) {
+        if (e.dataTransfer) {
+          let posString = e.dataTransfer.getData('pos');
+          if (posString) {
+            let pos = parseInt(posString)
+            if (pos) {
+              let droppos = view.posAtCoords({ left: e.clientX, top: e.clientY })
+              let node = view.state.doc.nodeAt(pos);
+              if (droppos && node) {
+                let tr = view.state.tr
+                tr.setSelection(NodeSelection.create(tr.doc, pos))
+                tr.deleteSelection()
+                let drop = tr.mapping.map(droppos.pos)
+                if (tr.doc.resolve(drop).parent.inlineContent) {
+                  drop = tr.doc.resolve(drop).after()
+                }
+                // TODO Check if dropping into a list
+                let lists = [
+                  "ordered_list",
+                  "bullet_list"
+                ]
+                let resolved = tr.doc.resolve(drop);
+                if (resolved.parent.type.name=="list_item") {
+                  if (resolved.start() == resolved.pos) {
+                    drop -= 1
+                  }
+                  else if (resolved.end() == resolved.pos) {
+                    drop += 1
+                  }
+                }
+                else if (lists.includes(tr.doc.resolve(drop - 1).parent.type.name)) {
+                  drop -= 1
+                }
+                
+                let parent = tr.doc.resolve(drop).parent.type
+                if (lists.includes(parent.name) && node.type.name != "list_item") {
+                  node = view.state.schema.nodes.list_item.create(null, node)
+                }
+                tr.insert(drop, node)
+                if (tr.doc.nodeAt(drop)) {
+                  tr.setSelection(NodeSelection.create(tr.doc, drop))
+                } else {
+                  tr.setSelection(NodeSelection.create(tr.doc, drop + 1))
+                }
+                view.dispatch(tr)
+                view.focus()
+                return true
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+}
+
+export const posPlugin = (rectanglesRef: Ref<any>) => {
+  return new Plugin({
+    view: (view) => {
+      let ignore = [
+        'text',
+        'column',
+        'table_cell',
+        'hard_break',
+        'table_header',
+        'table_row',
+        'title',
+        'list_item'
+      ]
+      return {
+        update: (view, prevState) => {
+          let items: any[] = []
+          view.state.doc.descendants((node, pos) => {
+            if (ignore.includes(node.type.name)) return;
+            /*
+            if (view.state.doc.resolve(pos).parent.type.name == "list_item") {
+              if (view.state.doc.resolve(pos).nodeBefore?.type.name != "paragraph" &&
+                view.state.doc.resolve(pos).parent.childCount == 1) {
+                return
+              }
+            }
+            if (node.childCount > 1 && node.type.name == "list_item") return*/
+            let coords = view.coordsAtPos(pos);
+            let dom = view.nodeDOM(pos)
+            let type = node.type.name;
+            let item = {
+              pos,
+              coords,
+              dom,
+              type
+            }
+            items.push(item)
+          })
+          let rectangles: any[] = []
+          items.forEach(item => {
+            let left = item.coords.left;
+            let top = item.coords.top;
+            let height = item.dom.clientHeight
+            let width = item.dom.clientWidth
+            let only_top = [
+              "column_list",
+              "table",
+              "ordered_list",
+              "bullet_list"
+            ]
+            if (only_top.includes(item.type)) {
+              height = 24;
+            }
+            if (item.type == "table") {
+              let offset = 12
+              left -= offset;
+              width += offset;
+            }
+            rectangles.push({ pos: item.pos, left, top, width, height  });
+          })
+          rectanglesRef.value = rectangles
+        }
+      }
+    }
   })
 }

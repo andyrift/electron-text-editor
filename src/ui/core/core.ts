@@ -32,11 +32,12 @@ export class Core {
     this.settings = new Settings(window.settings);
 
     this.editor.subscribeToUseView(async () => {
+      await this.pageManager.update()
       let pages = await this.pageManager.getAllPagesInfo();
       let id = null;
       if (pages.length) id = pages[0].id
       else id = await this.pageManager.createPage(this.editor.emptyPage());
-      if (id) await this.openPage(id);
+      if (id) await this.openPage(id, false);
     })
   }
 
@@ -46,14 +47,11 @@ export class Core {
     return false;
   }
 
-  async openPage(id: number): Promise<boolean> {
+  async openPage(id: number, save: boolean = true): Promise<boolean> {
+    if (save) await this.saveCurrentPage()
     let page = await this.pageManager.getPage(id);
     if (!page) return false
-    this.pageManager.currentPage.value = {
-      id: page.id,
-      title: page.title,
-      folder: page.folder
-    }
+    this.pageManager.currentPage.value = page;
     this.editor.putPage(page.data);
     return true;
   }
@@ -66,17 +64,26 @@ export class Core {
       id: this.pageManager.currentPage.value.id,
       data: pageEditor.data,
       title: pageEditor.title,
+      saved: this.pageManager.currentPage.value.saved, 
+      deleted: this.pageManager.currentPage.value.deleted, 
       folder: this.pageManager.currentPage.value.folder,      
     }
-    return this.pageManager.savePage(page);
+    
+    let ans = await this.pageManager.savePage(page)
+    if (ans) {
+      this.pageManager.currentPage.value.title = page.title;
+      this.pageManager.currentPage.value.saved = ans.saved;
+      return true;
+    }
+    return false
   }
 
   async deleteCurrentPage(): Promise<boolean> {
-    if (this.pageManager.currentPage.value) return this.deletePage(this.pageManager.currentPage.value.id);
+    if (this.pageManager.currentPage.value) return this.trashPage(this.pageManager.currentPage.value.id);
     return false;
   }
 
-  async deletePage(id: number): Promise<boolean> {
+  async trashPage(id: number): Promise<boolean> {
     if (this.pageManager.currentPage.value && this.pageManager.currentPage.value.id == id) {
       let openid = null;
       if (this.pageManager.pages.value.length > 1) {
@@ -85,15 +92,21 @@ export class Core {
       if (!openid) openid = await this.pageManager.createPage(await this.editor.emptyPage());
       if (openid) {
         await this.openPage(openid);
-        return this.pageManager.deletePage(id);
+        return this.pageManager.trashPage(id);
       }
       return false;
-    } else return this.pageManager.deletePage(id);
+    } else return this.pageManager.trashPage(id);
+  }
+
+  async restorePageAndSwitch(id: number): Promise<boolean> {
+    let res = await this.pageManager.restorePage(id);
+    if (!res) return false
+    return this.openPage(id);
   }
 
   async changeToNewFolder(pageid: number): Promise<boolean> {
     let folderid = await this.pageManager.createFolder();
-    if (folderid) return this.pageManager.changeFolder(pageid, folderid);
+    if (folderid) return this.pageManager.changePageFolder(pageid, folderid);
     return false
   }
 }

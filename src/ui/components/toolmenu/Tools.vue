@@ -1,15 +1,127 @@
 <template>
-  <div id="toolbar" style="z-index: 7;" class="select-none fixed shadow-unilg text-gray-800 flex-none min-w-40 rounded-md" @click="(e) => {e.stopPropagation()}">
+  <div id="toolbar" style="z-index: 7;" class="select-none text-sm fixed shadow-unilg text-gray-800 flex-none min-w-40 rounded-md" @click="(e) => {e.stopPropagation()}">
     <div class="bg-white rounded-md divide-y divide-gray-300 border border-gray-300 relative">
-      <div class="p-1.5">
+      <div v-show="showTableActions" class="p-1">
+        <ToolsButton :chevron="true" ref="tablebutton"  @click="handleShowTable">
+          <template v-slot:element>
+            <i class="fa-solid fa-table mr-2"></i>
+            <span>Table Actions</span>
+          </template>
+          <template v-slot:menu>
+            <Transition name="fadetool">
+              <SubMenu ref="tablesub" v-show=showTable>
+                <div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_col_before')" :available="commandState('t_col_before').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-left mr-2"></i>
+                      <span>{{ "Add Column Before" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_col_after')" :available="commandState('t_col_after').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-right mr-2"></i>
+                      <span>{{ "Add Column After" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_row_before')" :available="commandState('t_row_before').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-up mr-2"></i>
+                      <span>{{ "Add Row Before" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_row_after')" :available="commandState('t_row_after').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-down mr-2"></i>
+                      <span>{{ "Add Row After" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>
+                <div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_del_col')" :available="commandState('t_del_col').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-trash-can mr-2"></i>
+                      <span>{{ "Delete Column" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_del_row')" :available="commandState('t_del_row').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-trash-can mr-2"></i>
+                      <span>{{ "Delete Row" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>
+                <div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_merge_cell')" :available="commandState('t_merge_cell').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-right"></i>
+                      <i class="fa-solid fa-arrow-left mr-2"></i>
+                      <span>{{ "Merge Cells" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_split_cell')" :available="commandState('t_split_cell').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-arrow-left"></i>
+                      <i class="fa-solid fa-arrow-right mr-2"></i>
+                      <span>{{ "Split Cell" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>
+                <div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_head_cell')" :available="commandState('t_head_cell').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-heading mr-2"></i>
+                      <span>{{ "Toggle Cell Header" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_head_col')" :available="commandState('t_head_col').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-heading mr-2"></i>
+                      <span>{{ "Toggle Column Header" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_head_row')" :available="commandState('t_head_row').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-heading mr-2"></i>
+                      <span>{{ "Toggle Row Header" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>
+                <!--<div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_cell_forward')" :available="commandState('t_cell_forward').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-forward mr-2"></i>
+                      <span>{{ "Go to cell forward" }}</span>
+                    </template>
+                  </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 't_cell_backward')" :available="commandState('t_cell_backward').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-backward mr-2"></i>
+                      <span>{{ "Go to cell backward" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>-->
+                <div class="p-1">
+                  <ToolsButton @click="executeCommand($event, 't_delete')" :available="commandState('t_delete').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-trash-can mr-2"></i>
+                      <span>{{ "Delete Table" }}</span>
+                    </template>
+                  </ToolsButton>
+                </div>
+              </SubMenu>
+            </Transition>
+          </template>
+        </ToolsButton>
+      </div>
+      <!--<div class="p-1">
         <ToolsButton :available="false">
           <template v-slot:element>
             <i class="fa-solid fa-link mr-2"></i>
             <span>Add Link</span>
           </template>
         </ToolsButton>
-      </div>
-      <div class="p-1.5">
+      </div>-->
+      <div class="p-1">
         <ToolsButton :chevron="true" ref="formatbutton" @click="handleShowFormat">
           <template v-slot:element>
             <i class="fa-solid fa-brush mr-2"></i>
@@ -18,7 +130,7 @@
           <template v-slot:menu>
             <Transition name="fadetool">
               <SubMenu ref="formatsub" v-show=showFormat>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton @click="executeCommand($event, 'bold')" title="ctrl + b" :active="markState('bold').value" :available="commandState('bold').value">
                     <template v-slot:element>
                       <i class="fa-solid fa-bold mr-2"></i>
@@ -62,7 +174,7 @@
           <template v-slot:menu>
             <Transition name="fadetool">
               <SubMenu ref="turnsub" v-show=showTurn>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton @click="executeCommand($event, 'paragraph')" title="ctrl + alt + 0" :available="states['paragraph'].node || commandState('paragraph').value">
                     <template v-slot:element>
                       <i class="fa-solid fa-paragraph mr-2"></i>
@@ -88,7 +200,7 @@
                     </template>
                   </ToolsButton>
                 </div>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton @click="executeCommand($event, 'ul')" title="ctrl + shift + 8" :available="commandState('ul').value">
                     <template v-slot:element>
                       <i class="fa-solid fa-list-ul mr-2"></i>
@@ -108,7 +220,7 @@
                     </template>
                   </ToolsButton>
                 </div>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton @click="executeCommand($event, 'code_block')" title="ctrl + shift + \":available="states['code_block'].node || commandState('code_block').value">
                     <template v-slot:element>
                       <i class="fa-solid fa-code mr-2"></i>
@@ -134,7 +246,7 @@
           <template v-slot:menu>
             <Transition name="fadetool">
               <SubMenu ref="insertsub" v-show=showInsert>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton @click="executeCommand($event, 'hr')" title="ctrl + _" :available="commandState('hr').value">
                     <template v-slot:element>
                       <i class="fa-solid fa-window-minimize mr-2"></i>
@@ -153,13 +265,19 @@
                       <span>Columns</span>
                     </template>
                   </ToolsButton>
+                  <ToolsButton @click="executeCommand($event, 'pagelink', null)" :available="commandState('pagelink').value">
+                    <template v-slot:element>
+                      <i class="fa-solid fa-file-lines mr-2"></i>
+                      <span>Page Link</span>
+                    </template>
+                  </ToolsButton>
                 </div>
               </SubMenu>
             </Transition>
           </template>
         </ToolsButton>
       </div>  
-      <div class="p-1.5">
+      <div class="p-1">
         <ToolsButton :chevron="true" ref="colorbutton"  @click="handleShowColor">
           <template v-slot:element>
             <i class="fa-solid fa-paint-roller mr-2"></i>
@@ -168,10 +286,10 @@
           <template v-slot:menu>
             <Transition name="fadetool">
               <SubMenu ref="colorsub" v-show=showColor>
-                <div class="p-1.5">
+                <div class="p-1">
                   <ToolsButton v-for="color, key in colors" :key="key" @click="executeCommand($event, 'setcolor_' + key)">
                     <template v-slot:element>
-                      <i class="fa-solid fa-palette -ml-0.5 p-1.5 mr-2 rounded bg-opacity-30"
+                      <i class="text-black text-opacity-0 fa-solid fa-palette -ml-0.5 p-1.5 mr-2 rounded bg-opacity-30"
                       :class="'bg-' + color.class"></i><span>{{ color.name || "Error" }}</span>
                     </template>
                   </ToolsButton>
@@ -181,22 +299,24 @@
           </template>
         </ToolsButton>
       </div>
-      <div class="p-1.5">
+      <div class="p-1">
         <ToolsButton @click="executeCommand($event, 'indent')" title="tab" :available="commandState('indent').value">
           <template v-slot:element>
             <i class="fa-solid fa-indent mr-2"></i>
             <span>Indent</span>
           </template>
         </ToolsButton>
-        <ToolsButton @click="executeCommand($event, 'outdent')" title="shift + tab" :available="commandState('outdent').value">
+        <ToolsButton @click="executeCommand($event, 'outdent')" title="shift + tab" 
+        :available="commandState('outdent').value">
           <template v-slot:element>
             <i class="fa-solid fa-outdent mr-2"></i>
             <span>Outdent</span>
           </template>
         </ToolsButton>
       </div>
-      <div class="p-1.5">
-        <ToolsButton :available="false">
+      <div class="p-1">
+        <ToolsButton @click="executeCommand($event, 'delete')" 
+        :available="commandState('delete').value">
           <template v-slot:element>
             <i class="fa-solid fa-trash-can mr-2"></i>
             <span>Delete</span>
@@ -211,7 +331,6 @@
 
 import { Ref, computed, nextTick, ref } from "vue";
 import { Editor, PubSub } from "@core";
-import { ButtonDirection, ToolbarButton, IconButton, Veil } from "@components"
 import ToolsButton from './ToolsButton.vue'
 import SubMenu from './SubMenu.vue'
 
@@ -246,6 +365,38 @@ const toggleSubmenu = async (showRef: Ref<any>, button: Ref<any>, sub: Ref<any>)
   }
 }
 
+const tableActions = [
+  "t_col_before",
+  "t_col_after",
+  "t_row_before",
+  "t_row_after",
+  "t_del_col",
+  "t_del_row",
+  "t_merge_cell",
+  "t_split_cell",
+  "t_head_cell",
+  "t_head_col",
+  "t_head_row",
+  "t_cell_forward",
+  "t_cell_backward",
+  "t_delete",
+]
+
+const showTableActions = computed(() => {
+  let show = false
+  tableActions.forEach(action => {
+    show ||= !!states[action].applicable
+  })
+  return show
+})
+
+const showTable = ref(false)
+const tablebutton = ref<null | InstanceType<typeof ToolsButton>>(null);
+const tablesub = ref<null | InstanceType<typeof SubMenu>>(null);
+const handleShowTable = async () => {
+  toggleSubmenu(showTable, tablebutton, tablesub)
+}
+
 const showColor = ref(false)
 const colorbutton = ref<null | InstanceType<typeof ToolsButton>>(null);
 const colorsub = ref<null | InstanceType<typeof SubMenu>>(null);
@@ -275,7 +426,7 @@ const handleShowInsert = async () => {
 }
 
 const hideAllExcept = (except: Ref) => {
-  let arr = [showFormat, showColor, showTurn, showInsert]
+  let arr = [showFormat, showColor, showTurn, showInsert, showTable]
   arr.forEach(toHide => {
     if (toHide != except) toHide.value = false;
   })
@@ -292,12 +443,13 @@ PubSub.subscribe('hide-toolbar', () => {
   showFormat.value = false;
   showTurn.value = false;
   showInsert.value = false;
+  showTable.value = false;
 })
 
-const executeCommand = (e: Event, command: string) => {
+const executeCommand = (e: Event, command: string, ...args: any[]) => {
   e.preventDefault();
   pubSub.emit('hide-toolbar');
-  commands.value[command]();
+  commands.value[command](...args);
 }
 
 const commandState = (key: string) => {

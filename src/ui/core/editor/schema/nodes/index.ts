@@ -1,8 +1,8 @@
-import { doc, blockquote, hard_break, heading, horizontal_rule, paragraph, text, title, check, } from "./basic"
+import { doc, blockquote, hard_break, heading, horizontal_rule, paragraph, text, title } from "./basic"
 import { column_list, column } from "./columns"
 import { bullet_list, ordered_list, list_item } from "./lists"
 import { table, table_row, table_cell, table_header } from "./tables"
-import { code_block } from "./fancy"
+import { code_block, check, page_link } from "./fancy"
 
 export * from "./basic"
 export * from "./columns"
@@ -37,4 +37,5 @@ export const nodes = {
   table_header,
 
   code_block, // block
+  page_link
 }

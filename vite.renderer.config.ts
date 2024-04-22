@@ -21,7 +21,7 @@ export default defineConfig((env) => {
       vue({
         template: {
           compilerOptions: {
-            isCustomElement: (tag) => ['column', 'columns'].includes(tag),
+            isCustomElement: (tag) => ['column', 'columns', 'pagelink'].includes(tag),
           }
         }
       })

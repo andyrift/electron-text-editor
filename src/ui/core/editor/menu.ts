@@ -7,7 +7,7 @@ import type { Command } from "prosemirror-state";
 
 import { colors } from "@core";
 
-export type MenuCommands = { [id: string]: Command };
+export type MenuCommands = { [id: string]: (Command) };
 export type MenuMarks = { [id: string]: MarkType };
 export type MenuNodes = { [id: string]: { nodetype: NodeType, attrs?: Attrs } };
 export type MenuSets = { [id: string]: (state: boolean) => void };
@@ -58,7 +58,24 @@ export class Menu {
     states.value["hr"] = { applicable: true };
     states.value["table"] = { applicable: true };
     states.value["columns"] = { applicable: true };
+    states.value["pagelink"] = { applicable: true };
 
+    states.value["t_col_before"] = { applicable: true };
+    states.value["t_col_after"] = { applicable: true };
+    states.value["t_row_before"] = { applicable: true };
+    states.value["t_row_after"] = { applicable: true };
+    states.value["t_del_col"] = { applicable: true };
+    states.value["t_del_row"] = { applicable: true };
+    states.value["t_merge_cell"] = { applicable: true };
+    states.value["t_split_cell"] = { applicable: true };
+    states.value["t_head_cell"] = { applicable: true };
+    states.value["t_head_col"] = { applicable: true };
+    states.value["t_head_row"] = { applicable: true };
+    states.value["t_cell_forward"] = { applicable: true };
+    states.value["t_cell_backward"] = { applicable: true };
+    states.value["t_delete"] = { applicable: true };
+
+    states.value["delete"] = { applicable: true };
 
     this.states = states;
 
@@ -86,6 +103,24 @@ export class Menu {
     commands["hr"] = cmd.horizontalRule;
     commands["table"] = cmd.table;
     commands["columns"] = cmd.columns;
+    commands["pagelink"] = cmd.insertPageLink(null);
+
+    commands["t_col_before"] = cmd.addColumnBefore
+    commands["t_col_after"] = cmd.addColumnAfter
+    commands["t_row_before"] = cmd.addRowBefore
+    commands["t_row_after"] = cmd.addRowAfter
+    commands["t_del_col"] = cmd.deleteColumn
+    commands["t_del_row"] = cmd.deleteRow
+    commands["t_merge_cell"] = cmd.mergeCells
+    commands["t_split_cell"] = cmd.splitCell
+    commands["t_head_cell"] = cmd.toggleHeaderCell
+    commands["t_head_col"] = cmd.toggleHeaderColumn
+    commands["t_head_row"] = cmd.toggleHeaderRow
+    commands["t_cell_forward"] = cmd.goToCellForward
+    commands["t_cell_backward"] = cmd.goToCellBackward
+    commands["t_delete"] = cmd.deleteTable
+
+    commands["delete"] = cmd.deleteCurrent
 
 
     this.commands = commands;
@@ -170,15 +205,37 @@ export class Menu {
 
       "hr",
       "table",
-      "columns"
-    ];
+      "columns",
+
+      "t_col_before",
+      "t_col_after",
+      "t_row_before",
+      "t_row_after",
+      "t_del_col",
+      "t_del_row",
+      "t_merge_cell",
+      "t_split_cell",
+      "t_head_cell",
+      "t_head_col",
+      "t_head_row",
+      "t_cell_forward",
+      "t_cell_backward",
+      "t_delete",
+
+      "delete"
+    ]
+
+    this.buttons.value["pagelink"] = (id: number) => {
+      editorView.focus();
+      this.cmd.insertPageLink(id)(editorView.state, editorView.dispatch);
+    }
 
     normally.forEach(createNormal);
 
     for (let color in colors) {
       this.buttons.value["setcolor_" + color] = () => {
         editorView.focus();
-        this.cmd.setNodeColor(color)(editorView.state, editorView.dispatch, editorView);
+        this.cmd.setNodeColor(color)(editorView.state, editorView.dispatch);
       }
     }
   };

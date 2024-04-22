@@ -1,32 +1,32 @@
 <template>
   <div class="relative my-auto">
-    <button class="hover:bg-gray-200 px-3 py-1 rounded  outline-none" @click="showMenu = !showMenu">
+    <button class="hover:bg-gray-200 px-3 py-1 rounded outline-none" @click="showMenu = !showMenu">
       <i class="fa-solid fa-ellipsis"></i>
     </button>
     <div v-show="showMenu" class="fixed z-10 top-0 left-0 w-screen h-screen bg-black opacity-0"
       @click="showMenu = false">
     </div>
     <Transition name="fadeup">
-      <div v-show="showMenu" class="absolute right-0 z-20 bg-white pt-2 shadow-unilg mt-2 w-64 rounded">
-        <div class="border-b-2 flex flex-col">
+      <div v-show="showMenu" class="absolute text-base right-0 z-20 bg-white pt-2 shadow-unilg mt-2 w-64 rounded-md border border-gray-300">
+        <!--<div class="border-b-2 flex flex-col">
           <div class="text-lg py-1 px-4 mb-1">
             Normal Thingies
           </div>
-        </div>
+        </div>-->
         <div class="border-b-2 flex flex-col">
-          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="core.saveCurrentPage(); showMenu = false;">
+          <div class="px-3 py-1.5 hover:bg-gray-200 cursor-pointer" @click="core.saveCurrentPage(); showMenu = false;">
             <i class="fa-solid fa-floppy-disk mr-2"></i> Save
           </div>
-          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="core.deleteCurrentPage(); showMenu = false;">
+          <div class="px-3 py-1.5 hover:bg-gray-200 cursor-pointer" @click="core.deleteCurrentPage(); showMenu = false;">
             <i class="fa-solid fa-trash-can mr-2"></i> Delete
           </div>
-          <div class="px-4 py-2 hover:bg-gray-200 cursor-pointer" @click="pubSub.emit('toggle-querier'); showMenu = false;">
+          <div class="px-3 py-1.5 hover:bg-gray-200 cursor-pointer" @click="pubSub.emit('toggle-querier'); showMenu = false;">
             <i class="fa-solid fa-bug mr-2"></i> Toggle Querier
           </div>
         </div>
         <div class="p-2">
           <div
-            class="w-fit h-fit bg-white flex-col text-base font-normal text-gray-700 p-1 rounded hover:shadow-uni transition-all cursor-default">
+            class="w-fit h-fit bg-white flex-col text-sm font-normal text-gray-700 p-1 cursor-default">
             <div>
               Word Count: {{ editor.wordCounter.value.words }}
             </div>

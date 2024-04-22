@@ -1,7 +1,6 @@
 import { ipcMain } from "electron";
 import md5 from 'md5';
 
-//import { dbApi } from './dbApi';
 import { initDB } from "./db";
 import dbApi from './dbApi'
 
@@ -14,6 +13,6 @@ export const api = () => {
   });
   let pairs = dbApi(initDB());
   for (let key in pairs) {
-    ipcMain.handle(key, pairs[key]);
+    ipcMain.handle('db:' + key, pairs[key]);
   }
 }

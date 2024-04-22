@@ -2,6 +2,8 @@ export type Page = {
   id: number;
   data: any;
   title: string | null;
+  saved: number;
+  deleted: number | null;
   folder: number | null;
 }
 
@@ -20,6 +22,8 @@ export type PageEditor = {
 export type PageInfo = {
   id: number;
   title: string | null;
+  saved: number;
+  deleted: number | null;
   folder: number | null;
 }
 

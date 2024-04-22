@@ -49,8 +49,8 @@ const buildKeymap = (cmd: Commands) => {
     "Mod-Alt-2": cmd.block.h2,
     "Mod-Alt-3": cmd.block.h3,
     "Shift-Ctrl-\\": cmd.block.code,
-    "Ctrl-m": cmd.table,
-    "Ctrl-k": cmd.columns,
+    "Ctrl-z": cmd.undo,
+    "Ctrl-Alt-z": cmd.redo,
   }
 
   return keymap(myKeymap);

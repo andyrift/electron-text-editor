@@ -35,7 +35,7 @@ export const bullet_list: NodeSpec = {
 };
 
 export const list_item: NodeSpec = {
-  content: "paragraph block*",
+  content: "block+",
   parseDOM: [{ tag: "li" }],
   toDOM() { return listitemDOM },
   defining: true

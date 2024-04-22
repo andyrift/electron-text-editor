@@ -3,6 +3,7 @@ import { type DirectEditorProps, EditorView } from "prosemirror-view";
 import { type Ref, onMounted, ref } from "vue";
 import type { PageEditor } from "@types";
 import { DOMSerializer, Node, Schema } from "prosemirror-model";
+import { history } from "prosemirror-history";
 
 import {
   dragPlugin,
@@ -18,13 +19,14 @@ import {
   tabInterceptPlugin,
   stateUpdatePlugin,
   listFixPlugin,
+  posPlugin,
 } from "./plugins";
 
 import { schema } from "./schema";
 
 import { Menu } from "./menu";
 import { Commands } from "./commands";
-import { CheckView } from "./nodeViews";
+import { CheckView, PageLinkView } from "./nodeViews";
 import { TableView, columnResizing } from "prosemirror-tables";
 
 export class Editor {
@@ -34,6 +36,7 @@ export class Editor {
   menu: Menu;
   view: EditorView | null = null;
   wordCounter = ref({ words: 0, characters: 0 });
+  rectangles = ref<any[]>([])
   private serializer: DOMSerializer;
 
   private titleSubs: Array<(title: string | null) => void> = [];
@@ -53,11 +56,11 @@ export class Editor {
     this.commands = new Commands(schema);
     this.menu = new Menu(schema, this.commands);
     this.plugins = [
+      gapCursor(),
       keymapPlugin(this.commands),
       menuPlugin(this.menu),
       wordCountPlugin(this.wordCounter),
       dropCursor(),
-      gapCursor(),
       titlePlaceholderPlugin("Untitled"),
       hintPlugin("Write something, '/' for commands..."),
       titleUpdatePlugin(this.emitTitleUpdate),
@@ -67,6 +70,8 @@ export class Editor {
       columnResizing(),
       tableEditing({ allowTableNodeSelection: true }),
       tabInterceptPlugin(),
+      history(),
+      posPlugin(this.rectangles)
     ];
     this.serializer = DOMSerializer.fromSchema(this.schema);
   };
@@ -117,6 +122,7 @@ export class Editor {
       nodeViews: {
         check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
         table(node) { return new TableView(node, 40) },
+        page_link(node, view, getPos) { return new PageLinkView(node, view, getPos, cmd) }
         //paragraph(node, view, getPos) { return new ParagraphView(node, view, getPos) },
         //code_block(node, view, getPos) { return new CodeblockView(node, view, getPos) }, 
         //heading(node, view, getPos) { return new HeadingView(node, view, getPos) },
@@ -125,8 +131,6 @@ export class Editor {
     } as DirectEditorProps);
     return view;
   };
-
-
 
   useView = (editor: Ref<Element | null>) => {
     document.execCommand('enableObjectResizing', false, 'false');

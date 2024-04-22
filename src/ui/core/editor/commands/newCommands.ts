@@ -22,17 +22,6 @@ export function chainCommands(...commands: readonly Command[]): Command {
   }
 }
 
-export const hardBreak: (hard_break: NodeType) => Command = (hard_break) => {
-  return (state, dispatch) => {
-    if (dispatch) {
-      let tr = state.tr;
-      tr.replaceSelectionWith(hard_break.create());
-      dispatch(tr.scrollIntoView());
-    }
-    return true;
-  };
-}
-
 export const tab_code: Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
   if (state.selection.$from.parent != state.selection.$to.parent) return false;
   if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
@@ -49,17 +38,6 @@ export const shift_tab_code: Command = (state: EditorState, dispatch?: (tr: Tran
   if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
   if (dispatch) { }
   return true;
-}
-
-export const horizontalRule: (horizontal_rule: NodeType) => Command = (horizontal_rule) => {
-  return (state, dispatch) => {
-    if (dispatch) {
-      let tr = state.tr;
-      tr.replaceSelectionWith(horizontal_rule.create());
-      dispatch(tr.scrollIntoView());
-    }
-    return true;
-  };
 }
 
 export const exitTitle = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
@@ -97,7 +75,6 @@ export const selectText: Command = (state: EditorState, dispatch?: (tr: Transact
   let $head = state.doc.resolve(sel.$anchor.end());
   if ($anchor.pos == sel.$anchor.pos && $head.pos == sel.$head.pos) return false;
   if (dispatch) dispatch(state.tr.setSelection(new TextSelection($anchor, $head)));
-  console.log('selected text')
   return true
 }
 
@@ -109,52 +86,6 @@ export const selectBlock: Command = (state: EditorState, dispatch?: (tr: Transac
   let pos = sel.$from.before();
   if (dispatch) dispatch(state.tr.setSelection(new NodeSelection(state.doc.resolve(pos))));
   return true
-}
-
-export function insertTable(rows: number, cols: number) {
-  return (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
-    const offset: number = state.tr.selection.anchor + 1;
-    const cells: Array<Node> = [];
-    for (let i = 0; i < rows * cols; i++) {
-      let cell = state.schema.nodes.table_cell.createAndFill()
-      if (!cell) return false;
-      cells.push(cell);
-    }
-    const trows: Array<Node> = [];
-    for (let i = 0; i < rows; i++) {
-      let rcells = cells.slice(i * cols, (i + 1) * cols)
-      let row = state.schema.nodes.table_row.create(null, Fragment.fromArray(rcells))
-      if (!row) return false;
-      trows.push(row);
-    }
-    const node: Node = state.schema.nodes.table.create(null, Fragment.fromArray(trows));
-
-    if (dispatch) {
-      let tr = state.tr;
-      tr.replaceSelectionWith(node);
-      tr.setSelection(TextSelection.near(tr.doc.resolve(offset)))
-      dispatch(tr.scrollIntoView());
-    }
-
-    return true;
-  };
-}
-
-export function insertColumns() {
-  return (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
-    const offset: number = state.tr.selection.anchor + 1;
-    const node = state.schema.nodes.column_list.createAndFill();
-    if (!node) return false;
-
-    if (dispatch) {
-      let tr = state.tr;
-      tr.replaceSelectionWith(node);
-      tr.setSelection(TextSelection.near(tr.doc.resolve(offset)))
-      dispatch(tr.scrollIntoView());
-    }
-
-    return true;
-  };
 }
 
 export const deleteColumns = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
@@ -225,3 +156,106 @@ const splitNode = (schema: Schema) => (node: Node, atEnd: boolean) : { type: Nod
 }
 
 export const splitBlock = (schema: Schema) => splitBlockAs(splitNode(schema))
+
+export function setPageLink(pos: number, id: number | null) {
+  return (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
+    let node = state.doc.nodeAt(pos);
+    if (!node) return false;
+    if (node.type != state.schema.nodes.page_link) return false;
+
+
+    if (dispatch) {
+      let tr = state.tr;
+      tr = tr.setNodeAttribute(pos, 'id', id);
+      dispatch(tr)
+    }
+
+    return true;
+  };
+}
+
+/// Deletes current selection, or, if it is empty, current block
+export const deleteCurrent = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
+  if (dispatch) {
+    let tr = state.tr;
+    let sel = tr.selection;
+    if (sel.empty) {
+      let before = sel.$anchor.before()
+      tr.setSelection(NodeSelection.create(tr.doc, before))
+    }
+    tr.deleteSelection()
+    dispatch(tr.scrollIntoView())
+  }
+
+  return true;
+}
+
+export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
+  let sel = state.selection;
+  let poss: number[] = []
+  if (!sel.empty) {
+    if (sel instanceof NodeSelection) {
+      if (sel.node.type != state.schema.nodes.check) return false
+    }
+    else if (sel instanceof CellSelection) return false
+  }
+
+  if (sel instanceof TextSelection) {
+    let flag = true;
+    state.doc.nodesBetween(sel.from, sel.to, (node, pos) => {
+      if (node.type != state.schema.nodes.check && node.type != state.schema.nodes.text) {
+        //flag = false;
+        //console.log(node.type.name)
+        //return false;
+      } else if (node.type != state.schema.nodes.text) {
+        poss.push(pos)
+      }
+    })
+    if (!flag) return false;
+    if (poss.length == 0) return false
+  }
+  
+  if (dispatch) {
+    let tr = state.tr;
+    let sel = tr.selection;
+    if (sel instanceof NodeSelection) {
+      tr.setBlockType(sel.from, sel.to, state.schema.nodes.paragraph, { bgcolor: sel.node.attrs.bgcolor })
+    } else if (sel instanceof TextSelection){
+      poss.forEach(pos => {
+        let node = tr.doc.nodeAt(tr.mapping.map(pos))
+        if (node) {
+          tr.setBlockType(pos + 1, undefined, state.schema.nodes.paragraph, { bgcolor: node.attrs.bgcolor })
+        }
+      })
+    } else {
+      console.log('nuh uh')
+      return false
+    }
+    dispatch(tr.scrollIntoView())
+  }
+
+  return true;
+}
+
+export const deleteCheck = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
+  if (!state.selection.empty) return false
+  if (state.selection.$anchor.parent.type != state.schema.nodes.check) return false;
+
+  let before = state.doc.resolve(state.selection.$from.before());
+
+  if (state.selection.from != before.pos + 1) return false;
+  
+  let node = state.doc.nodeAt(before.pos)
+  if (!node) return false
+  if (node.type != state.schema.nodes.check) return false;
+  let pos = before.pos
+
+
+  if (dispatch) {
+    let tr = state.tr;
+    tr.setBlockType(pos + 1, undefined, state.schema.nodes.paragraph, { bgcolor: node.attrs.bgcolor })
+    dispatch(tr.scrollIntoView())
+  }
+
+  return true;
+}
