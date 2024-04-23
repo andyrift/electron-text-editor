@@ -4,7 +4,7 @@ import { mergeClasses, matchColor } from "./helpers";
 
 export const codeblockDOM: readonly [string, ...any] = ["pre", {
   spellcheck: false,
-  class: "bg-gray-200 font-bold rounded text-gray-900 py-2 px-3 whitespace-pre",
+  class: "bg-gray-200 font-bold rounded text-gray-900 my-0.5 py-2 px-3 whitespace-pre",
 }, ["code", 0]];
 
 export const checkDOM = (node: Node): readonly [string, ...any] => {

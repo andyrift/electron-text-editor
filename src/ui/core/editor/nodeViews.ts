@@ -30,10 +30,10 @@ export class CheckView implements NodeView {
     this.dom.classList.add('bg-' + colors[this.bgcolor].class);
 
     let icon = document.createElement('i');
-    icon.classList.add(..."ml-0.5 mr-1.5 text-md inline cursor-pointer my-1 h-fit".split(' '));
+    icon.classList.add(..."ml-0.5 mr-1.5 text-md inline-block cursor-pointer align-top mt-1 h-fit".split(' '));
     icon.style.zIndex = '3'
 
-    this.contentDOM.classList.add('inline')
+    this.contentDOM.classList.add(...'inline-block'.split(' '))
 
     if (this.check == 'true') {
       icon.classList.add("fa-solid")

@@ -5,7 +5,7 @@ export const columnlistDOM: readonly [string, ...any] = ["columns", {
 }, 0];
 
 export const columnDOM: readonly [string, ...any] = ["column", {
-  class: "flex-none w-1/2 pr-4"
+  class: "flex-none w-1/2 pr-4 pt-4"
 }, 0];
 
 export const column_list: NodeSpec = {

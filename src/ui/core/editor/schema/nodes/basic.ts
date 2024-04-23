@@ -3,7 +3,7 @@ import { Node, NodeSpec } from "prosemirror-model";
 import { mergeClasses, matchColor, matchHeading } from "./helpers";
 
 export const titleDOM: readonly [string, ...any] = ["h1", {
-  class: "mt-1 mb-6 text-4xl font-bold"
+  class: "mt-1 mb-3 text-4xl font-bold"
 }, 0];
 
 export const paragraphDOM = (node: Node): readonly [string, ...any] => {

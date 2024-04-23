@@ -22,11 +22,20 @@ export const hardBreak: (hard_break: NodeType) => Command = (hard_break) => {
   };
 }
 
+function afterSelection(tr: Transaction) {
+  if (tr.selection instanceof NodeSelection) return tr.selection.head
+  let pos = Math.max(tr.selection.from, tr.selection.to)
+  if (pos == tr.doc.content.size) return pos
+  let $pos = tr.doc.resolve(pos)
+  if ($pos.parent == tr.doc) return pos
+  return $pos.after()
+}
+
 export const horizontalRule: (horizontal_rule: NodeType) => Command = (horizontal_rule) => {
   return (state, dispatch) => {
     if (dispatch) {
       let tr = state.tr;
-      tr.replaceSelectionWith(horizontal_rule.create());
+      tr.insert(afterSelection(tr), horizontal_rule.create())
       dispatch(tr.scrollIntoView());
     }
     return true;
@@ -35,7 +44,6 @@ export const horizontalRule: (horizontal_rule: NodeType) => Command = (horizonta
 
 export function insertTable(rows: number, cols: number) {
   return (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
-    const offset: number = state.tr.selection.anchor + 1;
     const cells: Array<Node> = [];
     for (let i = 0; i < rows * cols; i++) {
       let cell = state.schema.nodes.table_cell.createAndFill()
@@ -53,8 +61,9 @@ export function insertTable(rows: number, cols: number) {
 
     if (dispatch) {
       let tr = state.tr;
-      tr.replaceSelectionWith(node);
-      tr.setSelection(TextSelection.near(tr.doc.resolve(offset)))
+      let pos = afterSelection(tr)
+      tr.insert(pos, node)
+      tr.setSelection(TextSelection.near(tr.doc.resolve(pos)))
       dispatch(tr.scrollIntoView());
     }
 
@@ -70,8 +79,9 @@ export function insertColumns() {
 
     if (dispatch) {
       let tr = state.tr;
-      tr.replaceSelectionWith(node);
-      tr.setSelection(TextSelection.near(tr.doc.resolve(offset)))
+      let pos = afterSelection(tr)
+      tr.insert(pos, node)
+      tr.setSelection(TextSelection.near(tr.doc.resolve(pos)))
       dispatch(tr.scrollIntoView());
     }
 
@@ -85,7 +95,9 @@ export function insertPageLink(id: number | null) {
 
     if (dispatch) {
       let tr = state.tr;
-      tr.replaceSelectionWith(node);
+      let pos = afterSelection(tr)
+      tr.insert(pos, node)
+      tr.setSelection(TextSelection.near(tr.doc.resolve(pos)))
       dispatch(tr.scrollIntoView());
     }
 

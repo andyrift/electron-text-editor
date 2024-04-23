@@ -31,7 +31,7 @@ export class MenuView {
 
     this.markActive.forEach(({ marktype, set }) => {
       let { from, $from, to, empty } = state.selection;
-      if (empty) set(marktype.isInSet(state.storedMarks || $from.marks()));
+      if (empty) set(!!marktype.isInSet(state.storedMarks || $from.marks()));
       else set(state.doc.rangeHasMark(from, to, marktype))
     });
 

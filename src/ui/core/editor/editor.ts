@@ -20,6 +20,7 @@ import {
   stateUpdatePlugin,
   listFixPlugin,
   posPlugin,
+  addParagraphPlugin
 } from "./plugins";
 
 import { schema } from "./schema";
@@ -67,11 +68,12 @@ export class Editor {
       stateUpdatePlugin(this.emitStateUpdate),
       dragPlugin(),
       listFixPlugin(),
+      addParagraphPlugin(),
       columnResizing(),
       tableEditing({ allowTableNodeSelection: true }),
-      tabInterceptPlugin(),
       history(),
-      posPlugin(this.rectangles)
+      tabInterceptPlugin(),
+      posPlugin(this.rectangles),
     ];
     this.serializer = DOMSerializer.fromSchema(this.schema);
   };

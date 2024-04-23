@@ -362,6 +362,12 @@ export const posPlugin = (rectanglesRef: Ref<any>) => {
               left -= offset;
               width += offset;
             }
+            if (item.type == "column_list") {
+              let offset = 12
+              left -= offset;
+              width += offset;
+              height = 32;
+            }
             rectangles.push({ pos: item.pos, left, top, width, height  });
           })
           rectanglesRef.value = rectangles
