@@ -23,17 +23,23 @@
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
+      "@src/*": [
+        "./src/*",
+      ],
       "@types": [
         "./src/types"
       ],
-      "@components": [
-        "./src/ui/components"
+      "@editor": [
+        "./src/editor"
       ],
-      "@core": [
-        "./src/ui/core"
+      "@components": [
+        "./src/gui/components"
+      ],
+      "@renderer/*": [
+        "./src/renderer/*"
       ],
       "@utils": [
-        "./src/ui/utils"
+        "./src/gui/utils"
       ]
     }
   }

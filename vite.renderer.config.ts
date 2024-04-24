@@ -29,10 +29,12 @@ export default defineConfig((env) => {
     resolve: {
       preserveSymlinks: true,
       alias: {
+        "@src": path.resolve(__dirname, './src'),
         "@types": path.resolve(__dirname, './src/types'),
-        "@components": path.resolve(__dirname, './src/ui/components'),
-        "@core": path.resolve(__dirname, './src/ui/core'),
-        "@utils": path.resolve(__dirname, './src/ui/utils'),
+        "@editor": path.resolve(__dirname, './src/editor'),
+        "@components": path.resolve(__dirname, './src/gui/components'),
+        "@renderer": path.resolve(__dirname, './src/renderer'),
+        "@utils": path.resolve(__dirname, './src/gui/utils'),
       },
     },
     

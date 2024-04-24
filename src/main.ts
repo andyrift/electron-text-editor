@@ -6,7 +6,10 @@ if (squirrel) app.quit();
 import { BrowserWindow, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
 
 import path from 'path';
-import { api } from './api';
+import { api } from './main/api';
+
+const MENU = false
+if (!MENU) Menu.setApplicationMenu(null)
 
 let mainWindow: BrowserWindow;
 
@@ -15,7 +18,7 @@ const createWindow = async () => {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, './preload.js'),
     },
   });
 
@@ -30,6 +33,8 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     /*if (process.platform !== 'darwin')*/ app.quit()
   });
+
+  mainWindow.webContents.openDevTools()
 };
 
 const mainMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
@@ -63,7 +68,7 @@ const mainMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
 // add dev tools to main menu
 
 if (process.env.NODE_ENV !== 'production') {
-  mainMenuTemplate. push({
+  mainMenuTemplate.push({
     label: 'Dev Tools',
     submenu: [
       {
@@ -103,15 +108,13 @@ const onAllWindowsClosed = () => {
 };
 
 const init = async () => {
-  setMenu();
+  if (MENU) setMenu()
   onMacReopen();
   onAllWindowsClosed();
 
   api();
 
   await createWindow();
-
-  //mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(init);
