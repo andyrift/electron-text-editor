@@ -3,54 +3,25 @@ import { app } from 'electron';
 import squirrel from 'electron-squirrel-startup';
 if (squirrel) app.quit();
 
-import { BrowserWindow, Menu, MenuItem, MenuItemConstructorOptions } from 'electron';
+import { BrowserWindow, Menu, MenuItem, type MenuItemConstructorOptions } from 'electron';
 
 import path from 'path';
-import { api } from './main/api';
 
 const MENU = false
+const DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED = true
+
 if (!MENU) Menu.setApplicationMenu(null)
 
-let mainWindow: BrowserWindow;
+const mainMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = []
 
-const createWindow = async () => {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, './preload.js'),
-    },
-  });
-
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  } else {
-    await mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
-  }
-
-  mainWindow.maximize();
-
-  mainWindow.on('closed', () => {
-    /*if (process.platform !== 'darwin')*/ app.quit()
-  });
-
-  mainWindow.webContents.openDevTools()
-};
-
-const mainMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
-  {
+if (MENU) {
+  mainMenuTemplate.push({
     label: 'File',
     submenu: [
       {
         label: 'Do something',
         click() {
           console.log("did something")
-        }
-      },
-      {
-        label: 'Clear Items',
-        click() {
-          mainWindow.webContents.send('item:clear');
         }
       },
       {
@@ -62,53 +33,80 @@ const mainMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
         }
       }
     ]
-  }
-]
-
-// add dev tools to main menu
-
-if (process.env.NODE_ENV !== 'production') {
-  mainMenuTemplate.push({
-    label: 'Dev Tools',
-    submenu: [
-      {
-        label: 'Toggle DevTools',
-        accelerator: process.platform ==
-          'darwin' ? 'Command+I' : 'Ctrl+I',
-        click(item, focusedWindow) {
-          if (focusedWindow) focusedWindow.webContents.toggleDevTools();
-        }
-      },
-      {
-        role: 'reload'
-      }
-    ]
   })
+  if (process.env.NODE_ENV !== 'production') {
+    mainMenuTemplate.push({
+      label: 'Dev Tools',
+      submenu: [
+        {
+          label: 'Toggle DevTools',
+          accelerator: process.platform ==
+            'darwin' ? 'Command+I' : 'Ctrl+I',
+          click(item, focusedWindow) {
+            if (focusedWindow) focusedWindow.webContents.toggleDevTools();
+          }
+        },
+        {
+          role: 'reload'
+        }
+      ]
+    })
+  }
 }
 
 if (process.platform == 'darwin') {
   mainMenuTemplate.unshift({});
 }
 
+const createWindow = async () => {
+  const mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, './preload.js'),
+    },
+  });
+
+  mainWindow.maximize();
+
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else {
+    await mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+  }
+
+  mainWindow.on('closed', () => {
+    if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED)
+      app.quit()
+  });
+
+  mainWindow.webContents.openDevTools()
+};
+
 const setMenu = () => {
-  const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-  Menu.setApplicationMenu(mainMenu);
+  if (MENU)
+  Menu.setApplicationMenu(Menu.buildFromTemplate(mainMenuTemplate));
 };
 
 const onMacReopen = () => {
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  })
+  if (!DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) {
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    })
+  }
 };
 
 const onAllWindowsClosed = () => {
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
+    if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) 
+    app.quit();
   })
 };
 
+import { api } from './main/api';
+
 const init = async () => {
-  if (MENU) setMenu()
+  setMenu()
   onMacReopen();
   onAllWindowsClosed();
 
