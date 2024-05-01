@@ -7,6 +7,8 @@ export const builtins = ['electron', ...builtinModules.map((m) => [m, `node:${m}
 
 export const external = [...builtins, ...Object.keys('dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {})];
 
+import path from 'path'
+
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   const { root, mode, command } = env;
 
@@ -22,6 +24,16 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       minify: command === 'build',
     },
     clearScreen: false,
+    resolve: {
+      preserveSymlinks: true,
+      alias: {
+        "@src": path.resolve(__dirname, './src'),
+        "@editor": path.resolve(__dirname, './src/editor'),
+        "@components": path.resolve(__dirname, './src/gui/components'),
+        "@renderer": path.resolve(__dirname, './src/renderer'),
+        "@utils": path.resolve(__dirname, './src/gui/utils'),
+      },
+    },
   };
 }
 
