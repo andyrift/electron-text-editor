@@ -58,7 +58,7 @@ if (process.platform == 'darwin') {
   mainMenuTemplate.unshift({});
 }
 
-const createWindow = async () => {
+async function createWindow () {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -83,12 +83,12 @@ const createWindow = async () => {
   mainWindow.webContents.openDevTools()
 };
 
-const setMenu = () => {
+function setMenu() {
   if (MENU)
   Menu.setApplicationMenu(Menu.buildFromTemplate(mainMenuTemplate));
 };
 
-const onMacReopen = () => {
+function onMacReopen() {
   if (!DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) {
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -96,16 +96,16 @@ const onMacReopen = () => {
   }
 };
 
-const onAllWindowsClosed = () => {
+function onAllWindowsClosed() {
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) 
     app.quit();
   })
 };
 
-import { api } from './main/api';
+import { api } from './ipc/api';
 
-const init = async () => {
+async function init() {
   setMenu()
   onMacReopen();
   onAllWindowsClosed();
