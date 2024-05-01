@@ -1,35 +1,30 @@
 export class PubSub {
 
-  private static _instance: PubSub;
+  private static _instance: PubSub
 
   static getInstance(): PubSub {
-    if (this._instance) return this._instance;
-    this._instance = new this();
-    return this._instance;
-  };
-
-  private constructor() {
-    
+    if (this._instance) return this._instance
+    this._instance = new this()
+    return this._instance
   }
 
-  link: { [id: string] : Array<Function> } = {};
+  channels: { [id: string] : Array<Function> } = {}
 
   emit(event: string, ...args: any[]) {
-    if (this.link[event]) {
-      this.link[event].forEach(callback => {
-        callback(...args);
-      });
+    if (this.channels[event]) {
+      this.channels[event].forEach(callback => {
+        callback(...args)
+      })
     }
   }
 
   subscribe(event: string, callback: Function) {
-    if (!this.link[event]) this.link[event] = [];
-    this.link[event].push(callback);
+    if (!this.channels[event]) this.channels[event] = []
+    this.channels[event].push(callback)
   }
 
   static subscribe(event: string, callback: Function) {
-    let instance = this.getInstance();
-    if (!instance.link[event]) instance.link[event] = [];
-    instance.link[event].push(callback);
+    let instance = this.getInstance()
+    instance.subscribe(event, callback)
   }
 }
