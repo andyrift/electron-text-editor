@@ -30,7 +30,6 @@ export default defineConfig((env) => {
       preserveSymlinks: true,
       alias: {
         "@src": path.resolve(__dirname, './src'),
-        "@types": path.resolve(__dirname, './src/types'),
         "@editor": path.resolve(__dirname, './src/editor'),
         "@components": path.resolve(__dirname, './src/gui/components'),
         "@renderer": path.resolve(__dirname, './src/renderer'),

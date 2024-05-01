@@ -26,9 +26,6 @@
       "@src/*": [
         "./src/*",
       ],
-      "@types": [
-        "./src/types"
-      ],
       "@editor": [
         "./src/editor"
       ],
