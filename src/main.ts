@@ -1,11 +1,11 @@
-import { app } from 'electron';
+import { app } from 'electron'
 
-import squirrel from 'electron-squirrel-startup';
-if (squirrel) app.quit();
+import squirrel from 'electron-squirrel-startup'
+if (squirrel) app.quit()
 
-import { BrowserWindow, Menu, MenuItem, type MenuItemConstructorOptions } from 'electron';
+import { BrowserWindow, Menu, MenuItem, type MenuItemConstructorOptions } from 'electron'
 
-import path from 'path';
+import path from 'path'
 
 const MENU = false
 const DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED = true
@@ -43,7 +43,7 @@ if (MENU) {
           accelerator: process.platform ==
             'darwin' ? 'Command+I' : 'Ctrl+I',
           click(item, focusedWindow) {
-            if (focusedWindow) focusedWindow.webContents.toggleDevTools();
+            if (focusedWindow) focusedWindow.webContents.toggleDevTools()
           }
         },
         {
@@ -55,7 +55,7 @@ if (MENU) {
 }
 
 if (process.platform == 'darwin') {
-  mainMenuTemplate.unshift({});
+  mainMenuTemplate.unshift({})
 }
 
 async function createWindow () {
@@ -67,52 +67,52 @@ async function createWindow () {
     },
   });
 
-  mainWindow.maximize();
+  mainWindow.maximize()
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    await mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    await mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`))
   }
 
   mainWindow.on('closed', () => {
     if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED)
       app.quit()
-  });
+  })
 
   mainWindow.webContents.openDevTools()
-};
+}
 
 function setMenu() {
   if (MENU)
   Menu.setApplicationMenu(Menu.buildFromTemplate(mainMenuTemplate));
-};
+}
 
 function onMacReopen() {
   if (!DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) {
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
   }
-};
+}
 
 function onAllWindowsClosed() {
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED) 
-    app.quit();
+    app.quit()
   })
-};
+}
 
-import { api } from './ipc/api';
+import { api } from './ipc/api'
 
 async function init() {
   setMenu()
-  onMacReopen();
-  onAllWindowsClosed();
+  onMacReopen()
+  onAllWindowsClosed()
 
-  api();
+  api()
 
-  await createWindow();
+  await createWindow()
 }
 
-app.whenReady().then(init);
+app.whenReady().then(init)
