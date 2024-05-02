@@ -1,40 +1,28 @@
 import type { Database, RunResult } from "better-sqlite3"
 
-// Model
+import sqlRAW from "./database.sql?raw"
 
-export type StateJson = any;
+export type EditorStateJson = any;
+export type DocumentJson = any;
 
 export type Page = {
-  id: number;
-  data: StateJson;
-  title: string | null;
-  saved: number;
-  deleted: number | null;
-  folder: number | null;
+  id: number
+  title: string | null
+  last_saved: number
+  deleted: number | null
+  folder: number | null
 }
 
 export type Folder = {
-  id: number;
+  id: number
   name: string | null
+  folder: number | null
 }
-
 
 export type PageData = {
-  id: number;
-  data: StateJson;
-}
-
-export type PageState = {
-  data: StateJson;
-  title: string | null
-}
-
-export type PageInfo = {
-  id: number;
-  title: string | null;
-  saved: number;
-  deleted: number | null;
-  folder: number | null;
+  id: number
+  document: DocumentJson
+  editor_state: EditorStateJson
 }
 
 // Template model types
@@ -44,10 +32,19 @@ type DBPromise<T> = Promise<DBResponse<T>>
 
 export class Model {
   db: Database
-  constructor(db: Database) {
+
+  async init() {
+    this.db.exec(sqlRAW);
+  }
+
+  constructor(db: Database, callback: (status: boolean) => void) {
     this.db = db
-    this.db.prepare("create table if not exists folders(id integer primary key autoincrement, name text)").run()
-    this.db.prepare("create table if not exists pages(id integer primary key autoincrement, data not null, title text, saved integer not null, deleted integer, folder integer references folders on delete set null)").run()
+    this.init().then(() => {
+      callback(true)
+    }).catch((err) => {
+      console.log(err)
+      callback(false)
+    })
   }
 
   async run(query: string): DBPromise<any> {
@@ -74,71 +71,105 @@ export class Model {
     }
   }
 
-  async createPage(data: StateJson): DBPromise<{ id: number }> {
-    const query = "insert into pages(data, title, saved) values (:data, :title, unixepoch()) returning id"
-    let params = { data: JSON.stringify(data), title: null }
+  async createPage(document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ id: number }> {
+    const create_page = this.db.prepare(
+      "insert into pages(title, last_saved) values (:title, unixepoch()) returning id"
+    )
+    const create_page_data = this.db.prepare(
+      "insert into page_data(id, document, editor_state) values (:id, :document, :editor_state)"
+    )
+    const tr = this.db.transaction(async (document: string, editor_state: string) => {
+      const res = await create_page.get({
+        title: null
+      }) as { id: number }
+      await create_page_data.run({ id: res.id, document, editor_state })
+      return res
+    })
 
     try {
       return {
-        status: true, value: await this.db.prepare(query).get(params) as { id: number }
+        status: true, 
+        value: await tr(JSON.stringify(document), JSON.stringify(editor_state))
       }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
   }
 
-  async getAllPagesInfo(): DBPromise<PageInfo[]> {
+  async savePage(title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ saved: number }> {
+    
+    const update_page = this.db.prepare(
+      "update pages set title = :title, saved = unixepoch() where id = :id returning saved"
+    )
+    const update_page_data = this.db.prepare(
+      "update page_data set document = :document, editor_state = :editor_state"
+    )
+
+    const tr = this.db.transaction(async (title: string | null, document: string, editor_state: string) => {
+      const res = await update_page.get({ title }) as { saved: number }
+      await update_page_data.run({ document, editor_state })
+      return res
+    })
+
+    try {
+      return {
+        status: true,
+        value: await tr(title, JSON.stringify(document), JSON.stringify(editor_state))
+      }
+    } catch (err: any) {
+      return { status: false, value: err.toString() }
+    }
+  }
+
+  async getAllPagesNotDel(): DBPromise<Page[]> {
     const query = "select id, title, folder, saved, deleted from pages where deleted is null"
 
     try {
-      return { status: true, value: await this.db.prepare(query).all() as PageInfo[] }
+      return { status: true, value: await this.db.prepare(query).all() as Page[] }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
   }
 
-  async getAllTrashPagesInfo(): DBPromise<PageInfo[]> {
-    const query = "select id, title, folder, saved, deleted from pages where deleted is not null"
+  async getAllPagesDel(): DBPromise<Page[]> {
+    const query = "select id, title, saved, deleted, folder from pages where deleted is not null"
 
     try {
-      return { status: true, value: await this.db.prepare(query).all() as PageInfo[] }
+      return { status: true, value: await this.db.prepare(query).all() as Page[] }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
   }
 
-  async getPageData(id: number): DBPromise<StateJson> {
-    const query = "select data from pages where id = :id"
-    let params = { id }
-    try {
-      let res: any = await this.db.prepare(query).get(params)
-      res.data = JSON.parse(res.data)
-      return { status: true, value: res }
-    } catch (err: any) {
-      return { status: false, value: err.toString() }
-    }
+  async getAllPages(deleted: boolean) {
+    if (deleted) return this.getAllPagesDel()
+    else return this.getAllPagesNotDel()
   }
 
   async getPage(id: number): DBPromise<Page> {
-    const query = "select id, data, title, saved, deleted, folder from pages where id = :id and deleted is null"
+    const query = "select id, data, title, saved, deleted, folder from pages where id = :id"
     let params = { id }
 
     try {
       let res: any = await this.db.prepare(query).get(params)
       res.data = JSON.parse(res.data)
-      
+
       return { status: true, value: res as Page }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
   }
 
-  async savePage(page: Page): DBPromise<{saved: number}> {
-    const query = "update pages set data = :data, title = :title, saved = unixepoch() where id = :id returning saved"
-    let params = { data: JSON.stringify(page.data), id: page.id, title: page.title }
+  async getPageData(id: number): DBPromise<PageData> {
+    const query = "select id, document, editor_state from page_data where id = :id"
+    let params = { id }
 
     try {
-      return { status: true, value: await this.db.prepare(query).get(params) as { saved: number } }
+      let res: any = await this.db.prepare(query).get(params)
+      res.document = JSON.parse(res.document)
+      res.editor_state = JSON.parse(res.editor_state)
+
+      return { status: true, value: res as PageData }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
@@ -184,7 +215,7 @@ export class Model {
   }
 
   async getAllFolders(): DBPromise<Folder[]> {
-    const query = "select id, name from folders"
+    const query = "select id, name, folder from folders"
 
     try {
       return { status: true, value: await this.db.prepare(query).all() as Folder[] }
@@ -228,9 +259,20 @@ export class Model {
     }
   }
 
-  async changePageFolder(pageid: number, folderid: number | null): DBPromise<RunResult> {
-    const query = "update pages set folder = :folderid where id =:pageid"
-    const params = { pageid, folderid }
+  async changePageFolder(child: number, parent: number | null): DBPromise<RunResult> {
+    const query = "update pages set folder = :parent where id =:child"
+    const params = { child, parent }
+
+    try {
+      return { status: true, value: await this.db.prepare(query).run(params) }
+    } catch (err: any) {
+      return { status: false, value: err.toString() }
+    }
+  }
+
+  async changeFolderFolder(child: number, parent: number | null): DBPromise<RunResult> {
+    const query = "update folders set folder = :parent where id =:child"
+    const params = { child, parent }
 
     try {
       return { status: true, value: await this.db.prepare(query).run(params) }
