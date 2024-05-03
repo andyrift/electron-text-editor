@@ -37,8 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { BetterButton } from "@components";
-import { DBResponse } from "@src/database/model";
+import { BetterButton } from "@components"
+import { DBResponse } from "@src/database/model"
 
 import { ref } from 'vue'
 
@@ -46,29 +46,29 @@ const input = ref("")
 
 const key_down = async (e: KeyboardEvent) => {
   if (e.key == "Enter") {
-    e.preventDefault();
-    run_query(e.target, buffered_command.value);
+    e.preventDefault()
+    run_query(e.target, buffered_command.value)
   } else if (e.key == "ArrowUp") {
-    e.preventDefault();
-    backward();
+    e.preventDefault()
+    backward()
   } else if (e.key == "ArrowDown") {
-    e.preventDefault();
-    forward();
+    e.preventDefault()
+    forward()
   }
   if (e.key == "ArrowRight" && e.altKey) {
-    e.preventDefault();
+    e.preventDefault()
     if (buffered_command.value == run) {
-      buffered_command.value = get;
+      buffered_command.value = get
     } else if (buffered_command.value == get) {
-      buffered_command.value = all;
+      buffered_command.value = all
     }
   }
   if (e.key == "ArrowLeft" && e.altKey) {
-    e.preventDefault();
+    e.preventDefault()
     if (buffered_command.value == all) {
-      buffered_command.value = get;
+      buffered_command.value = get
     } else if (buffered_command.value == get) {
-      buffered_command.value = run;
+      buffered_command.value = run
     }
   }
 }
@@ -76,9 +76,9 @@ const key_down = async (e: KeyboardEvent) => {
 const log_output = (output: DBResponse<any>) => {
   if (output.status) {
     try {
-      console.log(JSON.stringify(output.value, null, 2));
+      console.log(JSON.stringify(output.value, null, 2))
     } catch {
-      console.log(console.log(output.value));
+      console.log(console.log(output.value))
     }
   } else {
     console.log(output.value)
@@ -86,65 +86,65 @@ const log_output = (output: DBResponse<any>) => {
 }
 
 const run = async (query: string) => { 
-  log_output(await window.invoke("db:run", query));
+  log_output(await window.invoke("db:run", query))
 }
 const get = async (query: string) => {
-  log_output(await window.invoke("db:get", query));
+  log_output(await window.invoke("db:get", query))
 }
 const all = async (query: string) => {
-  log_output(await window.invoke("db:all", query));
+  log_output(await window.invoke("db:all", query))
 }
 
-var current_command = -1;
+var current_command = -1
 
 const run_query = (target: EventTarget | null, command: typeof run) => {
-  buffered_command.value = command;
-  const query = input.value;
-  input.value = '';
-  const last = history[history.length - 1];
+  buffered_command.value = command
+  const query = input.value
+  input.value = ''
+  const last = history[history.length - 1]
   if (query.length > 0 && (history.length == 0 || last && (query != last.query || command != last.command))) {
-    history.push({ query, command });
+    history.push({ query, command })
   }
-  current_command = -1;
-  command(query);
-  if (target instanceof HTMLElement) target.focus();
+  current_command = -1
+  command(query)
+  if (target instanceof HTMLElement) target.focus()
 }
 
 const backward = async () => {
-  if (history.length == 0) return;
+  if (history.length == 0) return
   if (current_command == -1) {
-    current_command = history.length - 1;
+    current_command = history.length - 1
   } else if (current_command > 0) {
-    current_command -= 1;
+    current_command -= 1
   }
   const current = history[current_command]
   if (!current) return
-  input.value = current.query;
-  buffered_command.value = current.command;
+  input.value = current.query
+  buffered_command.value = current.command
 }
 
 const forward = async () => {
-  if (history.length == 0) return;
+  if (history.length == 0) return
   if (current_command != -1) {
     if (current_command < history.length - 1) {
-      current_command += 1;
+      current_command += 1
       const current = history[current_command]
       if (!current) return
-      input.value = current.query;
-      buffered_command.value = current.command;
+      input.value = current.query
+      buffered_command.value = current.command
     } else {
-      current_command = -1;
-      input.value = '';
+      current_command = -1
+      input.value = ''
     }
   }
 }
 
 const clear_history = () => {
-  history = [];
-  current_command = -1;
+  history = []
+  current_command = -1
 }
 
-var buffered_command = ref(run);
-var history: { query: string, command: typeof run} [] = [];
+var buffered_command = ref(run)
+var history: { query: string, command: typeof run} [] = []
 
 </script>
