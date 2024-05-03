@@ -9,6 +9,20 @@ export const external = [...builtins, ...Object.keys('dependencies' in pkg ? (pk
 
 import path from 'path'
 
+export function pathResolveConfig() {
+  return {
+    resolve: {
+      alias: {
+        "@src": path.resolve(__dirname, './src'),
+        "@editor": path.resolve(__dirname, './src/editor'),
+        "@components": path.resolve(__dirname, './src/gui/components'),
+        "@renderer": path.resolve(__dirname, './src/renderer'),
+        "@utils": path.resolve(__dirname, './src/gui/utils'),
+      },
+    },
+  }
+}
+
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   const { root, mode, command } = env;
 
@@ -24,16 +38,6 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       minify: command === 'build',
     },
     clearScreen: false,
-    resolve: {
-      preserveSymlinks: true,
-      alias: {
-        "@src": path.resolve(__dirname, './src'),
-        "@editor": path.resolve(__dirname, './src/editor'),
-        "@components": path.resolve(__dirname, './src/gui/components'),
-        "@renderer": path.resolve(__dirname, './src/renderer'),
-        "@utils": path.resolve(__dirname, './src/gui/utils'),
-      },
-    },
   };
 }
 
@@ -68,7 +72,7 @@ export function getBuildDefine(env: ConfigEnv<'build'>) {
 }
 
 export function pluginExposeRenderer(name: string): Plugin {
-  const { VITE_DEV_SERVER_URL } = getDefineKeys([name])[name];
+  const { VITE_DEV_SERVER_URL } = getDefineKeys([name])[name] || {};
 
   return {
     name: '@electron-forge/plugin-vite:expose-renderer',
@@ -80,6 +84,7 @@ export function pluginExposeRenderer(name: string): Plugin {
       server.httpServer?.once('listening', () => {
         const addressInfo = server.httpServer!.address() as AddressInfo;
         // Expose env constant for main process use.
+        if (VITE_DEV_SERVER_URL)
         process.env[VITE_DEV_SERVER_URL] = `http://localhost:${addressInfo?.port}`;
       });
     },
