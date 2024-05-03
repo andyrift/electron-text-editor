@@ -309,4 +309,28 @@ export class DBModel implements DBModelMethods {
       return { status: false, value: err.toString() }
     }
   }
+
+
+
+  methods = {
+    run: this.run,
+    get: this.get,
+    all: this.all,
+    createPage: this.createPage,
+    savePage: this.savePage,
+    getAllPagesNotDel: this.getAllPagesNotDel,
+    getAllPagesDel: this.getAllPagesDel,
+    getAllPages: this.getAllPages,
+    getPage: this.getPage,
+    getPageData: this.getPageData,
+    trashPage: this.trashPage,
+    restorePage: this.restorePage,
+    deletePage: this.deletePage,
+    getAllFolders: this.getAllFolders,
+    renameFolder: this.renameFolder,
+    createFolder: this.createFolder,
+    deleteFolder: this.deleteFolder,
+    changePageFolder: this.changePageFolder,
+    changeFolderFolder: this.changeFolderFolder
+  }
 }
