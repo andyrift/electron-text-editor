@@ -50,7 +50,7 @@ export interface DBModelMethods {
   deletePage(id: number): DBPromise<RunResult>
 
   getAllFolders(): DBPromise<Folder[]>
-  renameFolder(folder: Folder): DBPromise<RunResult>
+  renameFolder(id: number, name: string | null): DBPromise<RunResult>
 
   createFolder(): DBPromise<{ id: number }>
   deleteFolder(id: number): DBPromise<RunResult>
@@ -151,7 +151,7 @@ export class DBModel implements DBModelMethods {
   }
 
   async getAllPagesNotDel(): DBPromise<Page[]> {
-    const query = "select id, title, folder, saved, deleted from pages where deleted is null"
+    const query = "select id, title, folder, last_saved, deleted from pages where deleted is null"
 
     try {
       return { status: true, value: await this.db.prepare(query).all() as Page[] }
@@ -161,7 +161,7 @@ export class DBModel implements DBModelMethods {
   }
 
   async getAllPagesDel(): DBPromise<Page[]> {
-    const query = "select id, title, saved, deleted, folder from pages where deleted is not null"
+    const query = "select id, title, last_saved, deleted, folder from pages where deleted is not null"
 
     try {
       return { status: true, value: await this.db.prepare(query).all() as Page[] }
@@ -176,7 +176,7 @@ export class DBModel implements DBModelMethods {
   }
 
   async getPage(id: number): DBPromise<Page> {
-    const query = "select id, data, title, saved, deleted, folder from pages where id = :id"
+    const query = "select id, data, title, last_saved, deleted, folder from pages where id = :id"
     let params = { id }
 
     try {
@@ -253,9 +253,9 @@ export class DBModel implements DBModelMethods {
     }
   }
 
-  async renameFolder(folder: Folder): DBPromise<RunResult> {
+  async renameFolder(id: number, name: string | null): DBPromise<RunResult> {
     const query = "update folders set name = :name where id = :id"
-    let params = { id: folder.id, name: folder.name }
+    let params = { id, name }
 
     try {
       return { status: true, value: await this.db.prepare(query).run(params) }
