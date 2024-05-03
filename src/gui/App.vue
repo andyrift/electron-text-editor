@@ -1,13 +1,13 @@
 <template>
   <div class="h-screen font-Roboto bg-white flex">
-    <Transition name="sidebartr">
+    <!--<Transition name="sidebartr">
       <Sidebar v-show="showSidebar" />
-    </Transition>
+    </Transition>-->
     <div class="h-full w-full overflow-x-clip flex flex-col transition-all">
-      <Navbar />
+      <!--<Navbar />-->
       <div class="p-2 h-full overflow-y-auto">
-        <Editor/>
-        <Querier v-if="showQuerier" />
+        <!--<Editor/>-->
+        <!--<Querier v-if="showQuerier" />-->
       </div>
     </div>
   </div>
@@ -15,34 +15,27 @@
 
 <script setup lang="ts">
 
+//import { Editor, Navbar, Sidebar, Querier } from '@components'
+
 import { ref } from 'vue'
+import { PubSub } from '@src/pubSub'
+const pubSub = PubSub.getInstance()
 
-import { PubSub } from '@src/pubSub';
-import { Core } from '@renderer/core';
-import { Editor, Navbar, Sidebar, Querier } from '@components';
+const showSidebar = ref(true)
+const showQuerier = ref(false)
 
-const showSidebar = ref(true);
-const showQuerier = ref(false);
+pubSub.subscribe("toggle-querier", () => {
+  showQuerier.value = !showQuerier.value
+})
 
-PubSub.subscribe("toggle-querier", () => {
-  showQuerier.value = !showQuerier.value;
-});
+pubSub.subscribe("set-sidebar", (show: boolean) => {
+  showSidebar.value = show
+})
 
-PubSub.subscribe("show-sidebar", () => {
-  showSidebar.value = true;
-});
-
-PubSub.subscribe("hide-sidebar", () => {
-  showSidebar.value = false;
-});
-
-const core = Core.getInstance();
-
-const handleKey = (e: KeyboardEvent) => {
+document.body.onkeydown = (e: KeyboardEvent) => {
   if (e.code == "KeyS" && e.ctrlKey) {
-    core.saveCurrentPage();
+    pubSub.emit("save-current-page")
   }
 }
 
-document.body.onkeydown = handleKey;
 </script>
