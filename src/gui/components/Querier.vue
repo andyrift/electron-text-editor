@@ -7,19 +7,20 @@
   </div>
   <h1 class=""></h1>
   <div class="flex flex-col gap-2">
-    <input ref="inp" class="border-2 border-gray-300 rounded p-1 
-          focus:outline-none focus:shadow-uni transition-shadow" type="text" @keydown="key_down"></input>
+    <input class="border-2 border-gray-300 rounded p-1 
+          focus:outline-none focus:shadow-uni transition-shadow" type="text" @keydown="key_down"
+      v-model="input"></input>
     <div class="flex gap-2">
       <BetterButton :class="buffered_command == run ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(run)">
+        @click="run_query(null, run)">
         run
       </BetterButton>
       <BetterButton :class="buffered_command == get ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(get)">
+        @click="run_query(null, get)">
         get
       </BetterButton>
       <BetterButton :class="buffered_command == all ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(all)">
+        @click="run_query(null, all)">
         all
       </BetterButton>
       <BetterButton @click="backward" title="Go back in history">
@@ -35,16 +36,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { BetterButton } from "@components";
+import { DBResponse } from "@src/database/model";
 
 import { ref } from 'vue'
 
-const inp = ref(null)
-const key_down = async (e) => {
+const input = ref("")
+
+const key_down = async (e: KeyboardEvent) => {
   if (e.key == "Enter") {
     e.preventDefault();
-    run_query(buffered_command.value);
+    run_query(e.target, buffered_command.value);
   } else if (e.key == "ArrowUp") {
     e.preventDefault();
     backward();
@@ -52,7 +55,7 @@ const key_down = async (e) => {
     e.preventDefault();
     forward();
   }
-  if (e.key == "ArrowRight" && e.ctrlKey) {
+  if (e.key == "ArrowRight" && e.altKey) {
     e.preventDefault();
     if (buffered_command.value == run) {
       buffered_command.value = get;
@@ -60,7 +63,7 @@ const key_down = async (e) => {
       buffered_command.value = all;
     }
   }
-  if (e.key == "ArrowLeft" && e.ctrlKey) {
+  if (e.key == "ArrowLeft" && e.altKey) {
     e.preventDefault();
     if (buffered_command.value == all) {
       buffered_command.value = get;
@@ -70,41 +73,41 @@ const key_down = async (e) => {
   }
 }
 
-const log_output = (output) => {
+const log_output = (output: DBResponse<any>) => {
   if (output.status) {
     try {
-      console.log(JSON.stringify(output.res, null, 2));
+      console.log(JSON.stringify(output.value, null, 2));
     } catch {
-      console.log(console.log(output.res));
+      console.log(console.log(output.value));
     }
   } else {
-    console.log(output.err)
+    console.log(output.value)
   }
 }
 
-const run = async (query) => { 
-  log_output(await window.api.dbquery_run(query));
+const run = async (query: string) => { 
+  log_output(await window.invoke("db:run", query));
 }
-const get = async (query) => {
-  log_output(await window.api.dbquery_get(query));
+const get = async (query: string) => {
+  log_output(await window.invoke("db:get", query));
 }
-const all = async (query) => {
-  log_output(await window.api.dbquery_all(query));
+const all = async (query: string) => {
+  log_output(await window.invoke("db:all", query));
 }
 
 var current_command = -1;
 
-const run_query = (command) => {
+const run_query = (target: EventTarget | null, command: typeof run) => {
   buffered_command.value = command;
-  const query = inp.value.value;
-  inp.value.value = '';
+  const query = input.value;
+  input.value = '';
   const last = history[history.length - 1];
-  if (query.length > 0 && (history.length == 0 || query != last.query || command != last.command)) {
+  if (query.length > 0 && (history.length == 0 || last && (query != last.query || command != last.command))) {
     history.push({ query, command });
   }
   current_command = -1;
   command(query);
-  inp.value.focus();
+  if (target instanceof HTMLElement) target.focus();
 }
 
 const backward = async () => {
@@ -114,8 +117,10 @@ const backward = async () => {
   } else if (current_command > 0) {
     current_command -= 1;
   }
-  inp.value.value = history[current_command].query;
-  buffered_command.value = history[current_command].command;
+  const current = history[current_command]
+  if (!current) return
+  input.value = current.query;
+  buffered_command.value = current.command;
 }
 
 const forward = async () => {
@@ -123,11 +128,13 @@ const forward = async () => {
   if (current_command != -1) {
     if (current_command < history.length - 1) {
       current_command += 1;
-      inp.value.value = history[current_command].query;
-      buffered_command.value = history[current_command].command;
+      const current = history[current_command]
+      if (!current) return
+      input.value = current.query;
+      buffered_command.value = current.command;
     } else {
       current_command = -1;
-      inp.value.value = '';
+      input.value = '';
     }
   }
 }
@@ -138,6 +145,6 @@ const clear_history = () => {
 }
 
 var buffered_command = ref(run);
-var history = [];
+var history: { query: string, command: typeof run} [] = [];
 
 </script>
