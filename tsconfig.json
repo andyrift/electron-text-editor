@@ -1,5 +1,15 @@
 {
   "compilerOptions": {
+
+    // Strictness
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+
     "noEmit": true,
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -8,8 +18,7 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "noImplicitThis": true,
-    "strict": true,
-    //"verbatimModuleSyntax": true,
+    
     "target": "ESNext",
     "useDefineForClassFields": true,
     "esModuleInterop": true,
@@ -18,13 +27,6 @@
     "isolatedModules": true,
 
     "allowJs": true,
-
-    "noImplicitAny": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noPropertyAccessFromIndexSignature": true,
 
     "sourceMap": true,
     "baseUrl": ".",
