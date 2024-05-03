@@ -30,7 +30,36 @@ export type PageData = {
 export type DBResponse<T> = { status: true, value: T } | { status: false, value: string }
 type DBPromise<T> = Promise<DBResponse<T>>
 
-export class Model {
+export interface DBModelMethods {
+  run(query: string): DBPromise<any>
+  get(query: string): DBPromise<any>
+  all(query: string): DBPromise<any[]>
+
+  createPage(document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ id: number }>
+  savePage(title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ saved: number }>
+
+  getAllPagesNotDel(): DBPromise<Page[]>
+  getAllPagesDel(): DBPromise<Page[]>
+  getAllPages(deleted: boolean): DBPromise<Page[]>
+  getPage(id: number): DBPromise<Page>
+
+  getPageData(id: number): DBPromise<PageData>
+
+  trashPage(id: number): DBPromise<RunResult>
+  restorePage(id: number): DBPromise<RunResult>
+  deletePage(id: number): DBPromise<RunResult>
+
+  getAllFolders(): DBPromise<Folder[]>
+  renameFolder(folder: Folder): DBPromise<RunResult>
+
+  createFolder(): DBPromise<{ id: number }>
+  deleteFolder(id: number): DBPromise<RunResult>
+
+  changePageFolder(child: number, parent: number | null): DBPromise<RunResult>
+  changeFolderFolder(child: number, parent: number | null): DBPromise<RunResult>
+}
+
+export class DBModel implements DBModelMethods {
   db: Database
 
   async init() {
@@ -70,7 +99,7 @@ export class Model {
       return { status: false, value: err.toString() }
     }
   }
-
+  
   async createPage(document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ id: number }> {
     const create_page = this.db.prepare(
       "insert into pages(title, last_saved) values (:title, unixepoch()) returning id"
@@ -141,7 +170,7 @@ export class Model {
     }
   }
 
-  async getAllPages(deleted: boolean) {
+  async getAllPages(deleted: boolean): DBPromise<Page[]> {
     if (deleted) return this.getAllPagesDel()
     else return this.getAllPagesNotDel()
   }
