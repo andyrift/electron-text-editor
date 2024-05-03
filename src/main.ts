@@ -34,7 +34,7 @@ if (MENU) {
       }
     ]
   })
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env['NODE_ENV'] !== 'production') {
     mainMenuTemplate.push({
       label: 'Dev Tools',
       submenu: [
@@ -103,14 +103,22 @@ function onAllWindowsClosed() {
   })
 }
 
-import { api } from './ipc/api'
+import { initDB } from './database/db'
+import { initIPCMain } from './ipc/ipc'
 
 async function init() {
   setMenu()
   onMacReopen()
   onAllWindowsClosed()
 
-  api()
+  const model = await initDB('database/', 'database.db')
+
+  if (!model) {
+    app.quit()
+    return
+  }
+
+  await initIPCMain(model)
 
   await createWindow()
 }
