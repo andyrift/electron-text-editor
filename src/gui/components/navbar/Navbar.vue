@@ -16,7 +16,8 @@
 
 <script setup lang="ts">
 
-import { SidebarToggle, Menu } from "."
+import SidebarToggle from "./SidebarToggle.vue"
+import Menu from "./Menu.vue"
 
 import { ref } from 'vue'
 import { PubSub } from "@src/pubSub"
