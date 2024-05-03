@@ -1,21 +1,21 @@
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue"
 
 export const useTime = () => {
-  const time = ref<string>("");
+  const time = ref<string>("")
   const refreshTime = () => {
     time.value = Intl.DateTimeFormat(navigator.language, {
       hour: 'numeric',
       minute: 'numeric',
       second: 'numeric'
-    }).format();
+    }).format()
   };
   let interval: NodeJS.Timeout | undefined = undefined
   onBeforeUnmount(() => {
-    clearInterval(interval);
+    clearInterval(interval)
   });
 
   onMounted(() => {
-    interval = setInterval(refreshTime, 1000);
+    interval = setInterval(refreshTime, 1000)
   })
-  return time;
+  return time
 }
