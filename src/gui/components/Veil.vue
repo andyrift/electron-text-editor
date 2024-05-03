@@ -42,7 +42,8 @@ defineExpose({
 
 function handleClick (e: MouseEvent) { 
   e.stopPropagation(); 
-  _show.value = false; callback && callback(e) 
+  _show.value = false; 
+  callback && callback(e) 
 }
 
 </script>

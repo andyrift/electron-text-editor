@@ -4,10 +4,10 @@
       <Sidebar v-show="showSidebar" />
     </Transition>-->
     <div class="h-full w-full overflow-x-clip flex flex-col transition-all">
-      <!--<Navbar />-->
+      <Navbar />
       <div class="p-2 h-full overflow-y-auto">
         <!--<Editor/>-->
-        <!--<Querier v-if="showQuerier" />-->
+        <Querier v-if="showQuerier" />
       </div>
     </div>
   </div>
@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 
-//import { Editor, Navbar, Sidebar, Querier } from '@components'
+import { Querier, Navbar } from '@components'
 
 import { ref } from 'vue'
 import { PubSub } from '@src/pubSub'
@@ -28,8 +28,12 @@ pubSub.subscribe("toggle-querier", () => {
   showQuerier.value = !showQuerier.value
 })
 
-pubSub.subscribe("set-sidebar", (show: boolean) => {
-  showSidebar.value = show
+pubSub.subscribe("sidebar-toggle-end", (show: boolean) => {
+  if (!show) showSidebar.value = false
+})
+
+pubSub.subscribe("sidebar-toggle-start", (show: boolean) => {
+  if (!show) showSidebar.value = true
 })
 
 document.body.onkeydown = (e: KeyboardEvent) => {
