@@ -23,10 +23,8 @@ export async function initIPCMain(model: DBModel) {
 
   for (let key in model.methods) {
     const method = model.methods[key as keyof Methods]
-    type P = Parameters<typeof method>
     const channel = "db:" + key
-    typedIpcMain.handle(channel as keyof Commands, async (_, ...args: P) => {
-      console.log(...args)
+    typedIpcMain.handle(channel as keyof Commands, async (_, ...args) => {
       return await (method as any).apply(model, args)
     })
   }
