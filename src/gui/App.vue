@@ -1,13 +1,13 @@
 <template>
   <div class="h-screen font-Roboto bg-white flex">
-    <!--<Transition name="sidebartr">
+    <!-- <Transition name="sidebartr">
       <Sidebar v-show="showSidebar" />
-    </Transition>-->
+    </Transition> -->
     <div class="h-full w-full overflow-x-clip flex flex-col transition-all">
       <Navbar />
       <div class="p-2 h-full overflow-y-auto">
-        <!--<Editor/>-->
-        <Querier v-if="showQuerier" />
+        <!-- <Editor/> -->
+        <Querier/>
       </div>
     </div>
   </div>
@@ -21,12 +21,8 @@ import { ref } from 'vue'
 import { PubSub } from '@src/pubSub'
 const pubSub = PubSub.getInstance()
 
+/*
 const showSidebar = ref(true)
-const showQuerier = ref(false)
-
-pubSub.subscribe("toggle-querier", () => {
-  showQuerier.value = !showQuerier.value
-})
 
 pubSub.subscribe("sidebar-toggle-end", (show: boolean) => {
   if (!show) showSidebar.value = false
@@ -35,6 +31,7 @@ pubSub.subscribe("sidebar-toggle-end", (show: boolean) => {
 pubSub.subscribe("sidebar-toggle-start", (show: boolean) => {
   if (!show) showSidebar.value = true
 })
+*/
 
 document.body.onkeydown = (e: KeyboardEvent) => {
   if (e.code == "KeyS" && e.ctrlKey) {

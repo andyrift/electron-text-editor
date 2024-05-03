@@ -1,46 +1,58 @@
 <template>
-  <div class="text-xl font-normal mb-2">
-    <i class="fa-solid fa-database mx-1"></i>
-    <span>
-      SQL Query Input
-    </span>
-  </div>
-  <h1 class=""></h1>
-  <div class="flex flex-col gap-2">
-    <input class="border-2 border-gray-300 rounded p-1 
-          focus:outline-none focus:shadow-uni transition-shadow" type="text" @keydown="key_down"
-      v-model="input"></input>
-    <div class="flex gap-2">
-      <BetterButton :class="buffered_command == run ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(null, run)">
-        run
-      </BetterButton>
-      <BetterButton :class="buffered_command == get ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(null, get)">
-        get
-      </BetterButton>
-      <BetterButton :class="buffered_command == all ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
-        @click="run_query(null, all)">
-        all
-      </BetterButton>
-      <BetterButton @click="backward" title="Go back in history">
-        <i class="fa-solid fa-rotate-left"></i>
-      </BetterButton>
-      <BetterButton @click="forward" title="Go forward in history">
-        <i class="fa-solid fa-rotate-right"></i>
-      </BetterButton>
-      <BetterButton @click="clear_history" title="Delete query history">
-        <i class="fa-solid fa-trash-can"></i>
-      </BetterButton>
+  <div v-if="show">
+    <div class="text-xl font-normal mb-2">
+      <i class="fa-solid fa-database mx-1"></i>
+      <span>
+        SQL Query Input
+      </span>
+    </div>
+    <h1 class=""></h1>
+    <div class="flex flex-col gap-2">
+      <input class="border-2 border-gray-300 rounded p-1
+            focus:outline-none focus:shadow-uni transition-shadow" type="text" @keydown="key_down"
+        v-model="input"></input>
+      <div class="flex gap-2">
+        <BetterButton :class="buffered_command == run ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
+          @click="run_query(null, run)">
+          run
+        </BetterButton>
+        <BetterButton :class="buffered_command == get ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
+          @click="run_query(null, get)">
+          get
+        </BetterButton>
+        <BetterButton :class="buffered_command == all ? 'outline outline-1 outline-app-secondary' : 'outline-none'"
+          @click="run_query(null, all)">
+          all
+        </BetterButton>
+        <BetterButton @click="backward" title="Go back in history">
+          <i class="fa-solid fa-rotate-left"></i>
+        </BetterButton>
+        <BetterButton @click="forward" title="Go forward in history">
+          <i class="fa-solid fa-rotate-right"></i>
+        </BetterButton>
+        <BetterButton @click="clear_history" title="Delete query history">
+          <i class="fa-solid fa-trash-can"></i>
+        </BetterButton>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+
 import { BetterButton } from "@components"
 import { DBResponse } from "@src/database/model"
 
 import { ref } from 'vue'
+
+import { PubSub } from '@src/pubSub'
+const pubSub = PubSub.getInstance()
+
+const show = ref(false)
+
+pubSub.subscribe("toggle-querier", () => {
+  show.value = !show.value
+})
 
 const input = ref("")
 
