@@ -253,6 +253,17 @@ export class DBModel implements DBModelMethods {
     }
   }
 
+  async getFolder(id: number): DBPromise<Folder> {
+    const query = "select id, name, folder from folders where id = :id"
+    let params = { id };
+
+    try {
+      return { status: true, value: await this.db.prepare(query).get(params) as Folder }
+    } catch (err: any) {
+      return { status: false, value: err.toString() }
+    }
+  }
+
   async renameFolder(id: number, name: string | null): DBPromise<RunResult> {
     const query = "update folders set name = :name where id = :id"
     let params = { id, name }
@@ -327,6 +338,7 @@ export class DBModel implements DBModelMethods {
     restorePage: this.restorePage,
     deletePage: this.deletePage,
     getAllFolders: this.getAllFolders,
+    getFolder: this.getFolder,
     renameFolder: this.renameFolder,
     createFolder: this.createFolder,
     deleteFolder: this.deleteFolder,
