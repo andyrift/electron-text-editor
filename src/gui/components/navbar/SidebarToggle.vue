@@ -26,13 +26,9 @@ const transition = new FixedSquaredTransition((value) => {
 width.value = 0
 
 pubSub.subscribe('toggle-sidebar-end', (value: boolean) => {
-  if (value) transition.hide(() => {
-    show.value = false
-  })
-  else {
-    show.value = true
-    transition.show()
-  }
+  show.value = !value
+  if (value) transition.hide()
+  else transition.show()
 });
 
 function showSidebar() {
