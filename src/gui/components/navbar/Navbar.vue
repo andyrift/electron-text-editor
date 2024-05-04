@@ -1,11 +1,11 @@
 <template>
   <div class="w-full h-10 bg-white border-b border-zinc-300 flex items-center pl-3 flex-none whitespace-nowrap">
     <SidebarToggle />
-    <div class="text-ellipsis mx-2 overflow-hidden w-full">
+    <div class="text-ellipsis mx-2 overflow-hidden w-full navbar-draggable">
       <i v-show="!title" class="fa-solid fa-home mr-3"></i>
       <span>{{ title || "Working Area" }}</span>
     </div>
-    <div class="grow"></div>
+    <div class="grow navbar-draggable"></div>
     <!-- <div v-show="last_saved.length" class="text-zinc-400 mx-4 text-xs">{{ "Last Saved: " + last_saved }}</div> -->
     <button class="hover:bg-zinc-200 rounded outline-none mr-1" @click="pubSub.emit('toggle-navbar-menu', true)">
       <i class="fa-solid fa-ellipsis p-2"></i>
@@ -42,3 +42,11 @@ pubSub.subscribe("page-title-changed", (value: string | null) => {
 // }, { deep: true })
 
 </script>
+
+<style>
+.navbar-draggable {
+  -webkit-app-region: drag;
+  -webkit-user-select: none;
+  user-select: none;
+}
+</style>
