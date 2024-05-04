@@ -6,6 +6,8 @@ import { DBModel } from "@src/database/model"
 
 type Events = {
   "toggle-dev-tools": () => void
+  "reload-window": () => void
+  "force-reload-window": () => void
 }
 
 type Methods = typeof DBModel.prototype.methods
@@ -44,5 +46,13 @@ export async function initIPCMainLate(mainWindow: BrowserWindow) {
     if(mainWindow.webContents.isDevToolsOpened())
       mainWindow.webContents.closeDevTools()
     else mainWindow.webContents.openDevTools({ mode: 'undocked' })
+  })
+
+  typedIpcMain.on("reload-window", (_) => {
+    mainWindow.webContents.reload()
+  })
+  typedIpcMain.on("force-reload-window", (_) => {
+    mainWindow.webContents.forcefullyCrashRenderer()
+    mainWindow.webContents.reload()
   })
 }

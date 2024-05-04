@@ -5,6 +5,12 @@ const pubSub = PubSub.getInstance()
 pubSub.subscribe("toggle-dev-tools", () => {
   window.send("toggle-dev-tools")
 })
+pubSub.subscribe("reload-window", () => {
+  window.send("reload-window")
+})
+pubSub.subscribe("force-reload-window", () => {
+  window.send("force-reload-window")
+})
 
 initGUI()
 
