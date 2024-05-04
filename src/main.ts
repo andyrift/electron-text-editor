@@ -65,6 +65,12 @@ async function createWindow () {
     webPreferences: {
       preload: path.join(__dirname, './preload.js'),
     },
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#ffffff',
+      symbolColor: '#202020',
+      height: 39,
+    }
   });
 
   mainWindow.maximize()
@@ -80,7 +86,7 @@ async function createWindow () {
       app.quit()
   })
   mainWindow.webContents.setZoomFactor(1)
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools({mode: 'undocked'})
 }
 
 function setMenu() {

@@ -3,7 +3,7 @@
     <Veil :callback="() => { show = false}" :show="show"></Veil>
     <Transition name="fadeup">
       <div v-show="show"
-        class="absolute right-0 top-6 z-20 bg-white shadow-unilg w-52 rounded-md border border-zinc-300">
+        class="absolute right-1 top-6 z-20 bg-white shadow-unilg w-52 rounded-md border border-zinc-300">
         <div class="text-sm border-b-2 flex flex-col p-1">
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded" @click="show = false;">
             <i class="fa-solid fa-floppy-disk mr-2"></i> Save
