@@ -1,8 +1,8 @@
 <template>
   <Transition name="sidebarToggle">
-    <div v-show="show" :style="{ width: width + 'px' }" class="text-xl flex-none relative h-9">
+    <div v-show="show" :style="{ width: width + 'px' }" class="flex-none relative h-8">
       <div class="absolute right-0">
-        <i class="h-9 flex-none fa-solid fa-angles-right cursor-pointer mr-1 hover:bg-gray-200 py-2 px-3 rounded"
+        <i class="h-8 flex-none fa-solid fa-angles-right cursor-pointer mr-1 hover:bg-zinc-200 p-2 rounded"
           @click="showSidebar"></i>
       </div>
     </div>
@@ -17,7 +17,7 @@ import { PubSub } from "@src/pubSub"
 const pubSub = PubSub.getInstance()
 
 const show = ref(false)
-const width = ref(40)
+const width = ref(32)
 
 const transition = new FixedSquaredTransition((value) => {
   width.value = value

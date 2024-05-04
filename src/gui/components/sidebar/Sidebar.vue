@@ -1,19 +1,19 @@
 <template>
   <div v-show="show" :style="{ width: transitionWidth + 'px' }" class="relative flex-none">
     <div :style="{ width: width + 'px' }"
-      class="absolute right-0 h-full bg-white border-r border-gray-300 flex flex-col flex-none">
-      <div class="text-xl pl-7 border-b border-gray-300 whitespace-nowrap flex items-center h-12 flex-none">
-        <div class="py-2">
+      class="absolute right-0 h-full bg-white border-r border-zinc-300 flex flex-col flex-none">
+      <div class="pl-5 border-b border-zinc-300 whitespace-nowrap flex items-center h-10 flex-none">
+        <div class="py-1">
           <div>Better Editor</div>
         </div>
         <div class="grow"></div>
-        <i class="fa-solid fa-angles-left cursor-pointer mr-3 hover:bg-gray-200 my-2 py-2 px-3 rounded"
+        <i class="fa-solid fa-angles-left cursor-pointer mr-3 hover:bg-zinc-200 my-1 p-2 rounded"
           @click="pubSub.emit('toggle-sidebar', false)"></i>
       </div>
-      <div class="sidebar h-full pb-2 px-3 text overflow-y-auto bg-gray-100 font-medium py-2">
+      <div class="sidebar h-full py-1 px-2 overflow-y-auto bg-zinc-100">
 
       </div>
-      <div class="border-t border-gray-300">
+      <div class="border-t border-zinc-300">
         <!-- <TrashButton></TrashButton> -->
       </div>
     </div>

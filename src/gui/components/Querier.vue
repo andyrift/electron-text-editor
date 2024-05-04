@@ -8,7 +8,7 @@
     </div>
     <h1 class=""></h1>
     <div class="flex flex-col gap-2">
-      <input class="border-2 border-gray-300 rounded p-1
+      <input class="border-2 border-zinc-300 rounded p-1
             focus:outline-none focus:shadow-uni transition-shadow" type="text" @keydown="key_down"
         v-model="input"></input>
       <div class="flex gap-2">
