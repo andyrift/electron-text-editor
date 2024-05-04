@@ -1,1 +1,0 @@
-export { default as ToolMenu } from './ToolMenu.vue'
