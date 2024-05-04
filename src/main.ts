@@ -79,7 +79,7 @@ async function createWindow () {
     if (process.platform !== 'darwin' || DARWIN_QUIT_ON_ALL_WINDOWS_CLOSED)
       app.quit()
   })
-
+  mainWindow.webContents.setZoomFactor(1)
   mainWindow.webContents.openDevTools()
 }
 
