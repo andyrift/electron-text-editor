@@ -1,5 +1,5 @@
 <template>
-  <div class="relative my-auto">
+  <div class="relative my-auto select-none">
     <Veil :callback="() => { show = false}" :show="show"></Veil>
     <Transition name="fadeup">
       <div v-show="show"
