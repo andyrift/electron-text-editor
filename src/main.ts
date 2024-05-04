@@ -86,7 +86,8 @@ async function createWindow () {
       app.quit()
   })
   mainWindow.webContents.setZoomFactor(1)
-  // mainWindow.webContents.openDevTools({mode: 'undocked'})
+
+  return mainWindow
 }
 
 function setMenu() {
@@ -110,7 +111,7 @@ function onAllWindowsClosed() {
 }
 
 import { initDB } from './database/db'
-import { initIPCMain } from './ipc/ipc'
+import { initIPCMain, initIPCMainLate } from './ipc/ipc'
 
 async function init() {
   setMenu()
@@ -126,7 +127,9 @@ async function init() {
 
   await initIPCMain(model)
 
-  await createWindow()
+  const mainWindow = await createWindow()
+
+  await initIPCMainLate(mainWindow)
 }
 
 app.whenReady().then(init)

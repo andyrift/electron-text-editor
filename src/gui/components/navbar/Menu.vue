@@ -11,9 +11,15 @@
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded" @click="show = false;">
             <i class="fa-solid fa-trash-can mr-2"></i> Delete
           </div>
+        </div>
+        <div class="text-sm border-b-2 flex flex-col p-1">
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('toggle-querier'); show = false;">
             <i class="fa-solid fa-bug mr-2"></i> Toggle Querier
+          </div>
+          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+            @click="pubSub.emit('toggle-dev-tools'); show = false;">
+            <i class="fa-solid fa-terminal mr-2"></i> Toggle Developer Tools
           </div>
         </div>
         <div class="py-1 px-3">
