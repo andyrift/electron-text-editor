@@ -12,13 +12,11 @@ export class WorkspaceManager {
     this.pubSub.subscribe("change-page-folder", async (child: number, parent: number | null) => {
       const res = await window.invoke("db:changePageFolder", child, parent)
       if (res.status) this.pubSub.emit("page-moved", child)
-      //else console.error(res.value)
     })
 
     this.pubSub.subscribe("change-folder-folder", async (child: number, parent: number | null) => {
       const res = await window.invoke("db:changeFolderFolder", child, parent)
       if (res.status) this.pubSub.emit("folder-moved", child)
-      //else console.error(res.value)
     })
     this.addToQueue(this.init)
   }

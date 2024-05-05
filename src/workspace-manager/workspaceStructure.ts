@@ -1,14 +1,16 @@
 import { Folder, Page } from "@src/database/model"
 import { PubSub } from "@src/pubSub"
 
-type StructurePage = {
+export type StructurePage = {
   id: number
 }
 
-type StructureFolder = {
+export type StructureFolder = {
   id: number
   content: Array<StructurePage | StructureFolder>
 }
+
+export type StructureHierarchy = Array<StructurePage | StructureFolder>
 
 export class WorkspaceStructure {
 
@@ -16,7 +18,7 @@ export class WorkspaceStructure {
   pages_trash = new Map<number, Page>()
   folders = new Map<number, Folder>()
 
-  structure: Array<StructureFolder | StructurePage> = []
+  structure: StructureHierarchy = []
 
   pubSub = PubSub.getInstance()
 
@@ -147,7 +149,7 @@ export class WorkspaceStructure {
   }
 
   private calculateContent(folderid: number | null) {
-    const str: Array<StructurePage | StructureFolder> = []
+    const str: StructureHierarchy = []
     this.pages.forEach(page => {
       if (page.folder == folderid) str.push({ 
         id: page.id 

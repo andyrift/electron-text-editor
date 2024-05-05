@@ -1,7 +1,8 @@
 <template>
   <div class="h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
-    <template v-for="item in structure" :key="item.id">
-      <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :name="item.name" :content="item.content">
+    <template v-for="item in browserStructure" :key="item.id">
+      <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :open="item.open" :name="item.name"
+        :content="item.content">
       </BrowserFolder>
       <BrowserPage v-else-if="item.type == 'page'" :id="item.id" :title="item.title"></BrowserPage>
     </template>
@@ -30,65 +31,27 @@ import { ref } from 'vue'
 import { PubSub } from "@src/pubSub"
 const pubSub = PubSub.getInstance()
 
-type Page = {
-  type: "page"
-  id: number
-  title: string | null
-}
+import type { BrowserHierarchy, FolderOpen } from "./pageBrowser"
+const browserStructure = ref<BrowserHierarchy>([])
+const folderOpen = ref<FolderOpen>({})
 
-type Folder = {
-  type: "folder"
-  id: number
-  content: Array<Page | Folder>
-  name: string | null
-}
-
-const structure = ref <Array<Page | Folder>>([])
-
-function pushContent(content: Array<StructurePage | StructureFolder>, 
-  folders: ReturnType<typeof window.getters.getWorkspaceFolders>, 
-  pages: ReturnType<typeof window.getters.getWorkspacePages>) {
-  const str: typeof structure.value = []
-  content.forEach(item => {
-    if ("content" in item) {
-      const folder = folders.get(item.id)
-      if (!folder) throw "Workspage structure not synchronized. Folder exists in structure but not in map"
-      str.push({
-        type: "folder",
-        id: item.id,
-        name: folder.name,
-        content: pushContent(item.content, folders, pages)
-      })
-    } else {
-      const page = pages.get(item.id)
-      if (!page) throw "Workspage structure not synchronized. Page exists in structure but not in map"
-      str.push({
-        type: "page",
-        id: page.id,
-        title: page.title
-      })
-    }
-  })
-  return str
-}
-
-type StructurePage = {
-  id: number
-}
-
-type StructureFolder = {
-  id: number
-  content: Array<StructurePage | StructureFolder>
-}
-
-function acceptStructure(value: Array<StructurePage | StructureFolder>) {
+import type { StructureHierarchy } from "@src/workspace-manager/workspaceStructure"
+import { constructContent, constructOpen, updateOpenInStructure } from "./pageBrowser"
+function acceptStructure(structure: StructureHierarchy) {
   const folders = window.getters.getWorkspaceFolders()
   const pages = window.getters.getWorkspacePages()
-  structure.value = pushContent(value, folders, pages)
+  browserStructure.value = constructContent(structure, folders, pages, folderOpen.value)
+  folderOpen.value = constructOpen(browserStructure.value)
 }
+
+pubSub.subscribe("folder-open-changed", (id: number, value: boolean) => {
+  folderOpen.value[id] = value
+  updateOpenInStructure(browserStructure.value, folderOpen.value)
+})
 
 pubSub.subscribe("workspace-structure-init-end", acceptStructure)
 pubSub.subscribe("workspace-structure-changed", acceptStructure)
+
 
 const handleDragover = (e: DragEvent) => {
   e.preventDefault()
