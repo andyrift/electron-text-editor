@@ -176,14 +176,10 @@ export class DBModel implements DBModelMethods {
   }
 
   async getPage(id: number): DBPromise<Page> {
-    const query = "select id, data, title, last_saved, deleted, folder from pages where id = :id"
+    const query = "select id, title, last_saved, deleted, folder from pages where id = :id"
     let params = { id }
-
     try {
-      let res: any = await this.db.prepare(query).get(params)
-      res.data = JSON.parse(res.data)
-
-      return { status: true, value: res as Page }
+      return { status: true, value: await this.db.prepare(query).get(params) as Page }
     } catch (err: any) {
       return { status: false, value: err.toString() }
     }
@@ -310,11 +306,32 @@ export class DBModel implements DBModelMethods {
     }
   }
 
+  private async checkFolderLoop(child: number, parent: number) {
+    const query = "select folder from folders where id = :child"
+    const stmnt = this.db.prepare(query)
+
+    var current: number | null = parent
+    while (true) {
+      if (current === null) break
+      if (current == child) break
+      const res = await stmnt.get({ child: current }) as { folder: number | null }
+      current = res.folder
+    }
+
+    if (current === null) return true
+    if (current == child) return false
+    throw "could not resolve loop"
+  }
+
   async changeFolderFolder(child: number, parent: number | null): DBPromise<RunResult> {
     const query = "update folders set folder = :parent where id =:child"
     const params = { child, parent }
 
     try {
+      if (parent !== null) {
+        if (!await this.checkFolderLoop(child, parent))
+          return { status: false, value: "Folders cannot form a loop" }
+      }
       return { status: true, value: await this.db.prepare(query).run(params) }
     } catch (err: any) {
       return { status: false, value: err.toString() }
