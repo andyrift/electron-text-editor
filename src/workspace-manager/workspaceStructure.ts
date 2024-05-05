@@ -174,6 +174,7 @@ export class WorkspaceStructure {
     if (!page.status) return
     if (page.value) this.pages.set(id, page.value)
     else this.pages.delete(id)
+    this.pubSub.emit("workspace-pages-changed")
   }
 
   async pageMoved(id: number) {
@@ -215,6 +216,7 @@ export class WorkspaceStructure {
     if (!folder.status) return
     if (folder.value) this.folders.set(id, folder.value)
     else this.folders.delete(id)
+    this.pubSub.emit("workspace-folders-changed")
   }
 
   async folderMoved(id: number) {

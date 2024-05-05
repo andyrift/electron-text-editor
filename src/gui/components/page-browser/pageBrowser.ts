@@ -61,11 +61,23 @@ export function constructOpen(structure: BrowserHierarchy) {
   return folderOpen
 }
 
-export function updateOpenInStructure(structure: BrowserHierarchy, folderOpen: FolderOpen) {
+export function updateOpenInStructure(structure: BrowserHierarchy, id: number, open: boolean) {
   structure.forEach(item => {
     if ("content" in item) {
-      item.open = folderOpen[item.id] || false
-      updateOpenInStructure(item.content, folderOpen)
+      if (item.id == id) item.open = open
+      else updateOpenInStructure(item.content, id, open)
+    }
+  })
+}
+
+export function updateNameInStructure(structure: BrowserHierarchy, id: number, name: string | null) {
+  structure.forEach(item => {
+    if ("content" in item) {
+      if (item.id == id) {
+        console.log(id, name)
+        item.name = name
+      }
+      else updateNameInStructure(item.content, id, name)
     }
   })
 }

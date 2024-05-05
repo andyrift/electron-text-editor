@@ -18,6 +18,12 @@ export class WorkspaceManager {
       const res = await window.invoke("db:changeFolderFolder", child, parent)
       if (res.status) this.pubSub.emit("folder-moved", child)
     })
+
+    this.pubSub.subscribe("change-folder-name", async (id: number, name: string | null) => {
+      const res = await window.invoke("db:renameFolder", id, name)
+      if (res.status) this.pubSub.emit("folder-saved", id)
+    })
+
     this.addToQueue(this.init)
   }
 

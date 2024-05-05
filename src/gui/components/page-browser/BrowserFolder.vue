@@ -19,10 +19,10 @@
         </IconButton>
       </div>
       <div class="relative">
-        <Veil :show="showRename" :callback="() => { showRename = false; hover = false }"></Veil>
+        <Veil :show="showRename" :callback="rejectName"></Veil>
         <div v-if="showRename"
           class="absolute top-6 right-0 z-20 bg-white p-1 shadow-unilg rounded-md border border-zinc-300 flex items-center">
-          <input ref="inp" v-model="input" class="border-2 border-zinc-300 rounded px-1 py-0.5
+          <input ref="inputElement" v-model="input" class="border-2 border-zinc-300 rounded px-1 py-0.5
           outline-none" type="text" @keydown="(e: KeyboardEvent) => { if (e.key == 'Enter') saveName() }"></input>
           <i class="rounded mx-1 p-1 text-xl fa-solid fa-check opacity-30 hover:opacity-100 transition-opacity cursor-pointer"
             @click="saveName"></i>
@@ -32,7 +32,8 @@
     <div v-if="open" class="ml-2 px-0 border-l border-l-zinc-300"
       :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">
       <template v-for="item in content" :key="item.id">
-        <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :open="item.open" :name="item.name" :content="item.content">
+        <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :open="item.open" :name="item.name"
+          :content="item.content">
         </BrowserFolder>
         <BrowserPage v-else-if="item.type == 'page'" :id="item.id" :title="item.title"></BrowserPage>
       </template>
@@ -71,7 +72,7 @@ const props = defineProps<{
 const open = ref(props.open);
 
 const input = ref<string | null>(props.name)
-const inp = ref<HTMLElement | null>(null)
+const inputElement = ref<HTMLElement | null>(null)
 
 const toggleOpen = async () => {
   open.value = !open.value
@@ -81,12 +82,19 @@ const toggleOpen = async () => {
 const toggleRename = async () => {
   showRename.value = true
   await nextTick()
-  if (inp.value) inp.value.focus()
+  if (inputElement.value) inputElement.value.focus()
 }
 
 const saveName = () => {
   showRename.value = false
   hover.value = false
+  pubSub.emit("change-folder-name", props.id, input.value)
+}
+
+const rejectName = () => {
+  showRename.value = false
+  hover.value = false
+  input.value = props.name
 }
 
 const handleDragStart = (e: DragEvent) => {

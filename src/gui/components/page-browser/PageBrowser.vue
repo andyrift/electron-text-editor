@@ -32,11 +32,13 @@ import { PubSub } from "@src/pubSub"
 const pubSub = PubSub.getInstance()
 
 import type { BrowserHierarchy, FolderOpen } from "./pageBrowser"
+import type { StructureHierarchy } from "@src/workspace-manager/workspaceStructure"
+
 const browserStructure = ref<BrowserHierarchy>([])
 const folderOpen = ref<FolderOpen>({})
 
-import type { StructureHierarchy } from "@src/workspace-manager/workspaceStructure"
-import { constructContent, constructOpen, updateOpenInStructure } from "./pageBrowser"
+import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure } from "./pageBrowser"
+
 function acceptStructure(structure: StructureHierarchy) {
   const folders = window.getters.getWorkspaceFolders()
   const pages = window.getters.getWorkspacePages()
@@ -46,7 +48,13 @@ function acceptStructure(structure: StructureHierarchy) {
 
 pubSub.subscribe("folder-open-changed", (id: number, value: boolean) => {
   folderOpen.value[id] = value
-  updateOpenInStructure(browserStructure.value, folderOpen.value)
+  updateOpenInStructure(browserStructure.value, id, value)
+})
+
+pubSub.subscribe("workspace-folders-changed", (id: number) => {
+  const folder = window.getters.getWorkspaceFolders().get(id)
+  if (!folder) return
+  updateNameInStructure(browserStructure.value, id, folder.name)
 })
 
 pubSub.subscribe("workspace-structure-init-end", acceptStructure)
