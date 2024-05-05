@@ -28,56 +28,62 @@ export class WorkspaceStructure {
     this.addToQueue(this.init)
 
     this.pubSub.subscribe("page-saved", (id: number) => {
-      this.addToQueue(() => {
-        this.pageSaved(id)
+      this.addToQueue(async () => {
+        await this.pageSaved(id)
       })
     })
 
     this.pubSub.subscribe("page-moved", (id: number) => {
-      this.addToQueue(() => {
-        this.pageMoved(id)
+      this.addToQueue(async () => {
+        await this.pageMoved(id)
       })
     })
 
     this.pubSub.subscribe("page-trashed", (id: number) => {
-      this.addToQueue(() => {
-        this.pageTrashed(id)
+      this.addToQueue(async () => {
+        await this.pageTrashed(id)
       })
     })
 
     this.pubSub.subscribe("page-restored", (id: number) => {
-      this.addToQueue(() => {
-        this.pageRestored(id)
+      this.addToQueue(async () => {
+        await this.pageRestored(id)
       })
     })
 
     this.pubSub.subscribe("page-deleted", (id: number) => {
-      this.addToQueue(() => {
-        this.pageDeleted(id)
+      this.addToQueue(async () => {
+        await this.pageDeleted(id)
       })
     })
 
     this.pubSub.subscribe("folder-created", (id: number) => {
-      this.addToQueue(() => {
-        this.folderCreated(id)
+      this.addToQueue(async () => {
+        await this.folderCreated(id)
       })
     })
 
     this.pubSub.subscribe("folder-saved", (id: number) => {
-      this.addToQueue(() => {
-        this.folderSaved(id)
+      this.addToQueue(async () => {
+        await this.folderSaved(id)
       })
     })
 
     this.pubSub.subscribe("folder-deleted", (id: number) => {
-      this.addToQueue(() => {
-        this.folderDeleted(id)
+      this.addToQueue(async () => {
+        await this.folderDeleted(id)
+      })
+    })
+
+    this.pubSub.subscribe("folder-moved", (id: number) => {
+      this.addToQueue(async () => {
+        await this.folderMoved(id)
       })
     })
 
     this.pubSub.subscribe("workspace-structure-update", (id: number) => {
-      this.addToQueue(() => {
-        this.update()
+      this.addToQueue(async () => {
+        await this.update()
       })
     })
   }
@@ -170,7 +176,7 @@ export class WorkspaceStructure {
 
   async pageMoved(id: number) {
     const page = await window.invoke("db:getPage", id)
-    if (!page.status) return
+    if (!page.status) throw "Page not found, could not update structure"
     if (page.value) this.pages.set(id, page.value)
     else this.pages.delete(id)
     this.recalculate = true
@@ -207,6 +213,14 @@ export class WorkspaceStructure {
     if (!folder.status) return
     if (folder.value) this.folders.set(id, folder.value)
     else this.folders.delete(id)
+  }
+
+  async folderMoved(id: number) {
+    const folder = await window.invoke("db:getFolder", id)
+    if (!folder.status) throw "Folder not found, could not update structure"
+    if (folder.value) this.folders.set(id, folder.value)
+    else this.folders.delete(id)
+    this.recalculate = true
   }
 
   async folderDeleted(id: number) {

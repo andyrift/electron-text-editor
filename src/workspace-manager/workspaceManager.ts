@@ -9,12 +9,16 @@ export class WorkspaceManager {
   executing = false
 
   constructor() {
-    this.pubSub.subscribe("change-page-folder", (child: number, parent: number | null) => {
-      console.log("change page folder", child, parent)
+    this.pubSub.subscribe("change-page-folder", async (child: number, parent: number | null) => {
+      const res = await window.invoke("db:changePageFolder", child, parent)
+      if (res.status) this.pubSub.emit("page-moved", child)
+      //else console.error(res.value)
     })
 
-    this.pubSub.subscribe("change-folder-folder", (child: number, parent: number | null) => {
-      console.log("change folder folder", child, parent)
+    this.pubSub.subscribe("change-folder-folder", async (child: number, parent: number | null) => {
+      const res = await window.invoke("db:changeFolderFolder", child, parent)
+      if (res.status) this.pubSub.emit("folder-moved", child)
+      //else console.error(res.value)
     })
     this.addToQueue(this.init)
   }
