@@ -24,6 +24,16 @@ export class WorkspaceManager {
       if (res.status) this.pubSub.emit("folder-saved", id)
     })
 
+    this.pubSub.subscribe("browser-create-folder", async () => {
+      const res = await window.invoke("db:createFolder")
+      if (res.status) this.pubSub.emit("folder-created", res.value.id)
+    })
+
+    this.pubSub.subscribe("browser-delete-folder", async (id: number) => {
+      const res = await window.invoke("db:deleteFolder", id)
+      if (res.status) this.pubSub.emit("folder-deleted", id)
+    })
+
     this.addToQueue(this.init)
   }
 

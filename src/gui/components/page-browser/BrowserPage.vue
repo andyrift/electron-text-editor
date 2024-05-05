@@ -30,14 +30,14 @@ const pubSub = PubSub.getInstance()
 const hover = ref(false);
 
 const props = defineProps<{
-  id: number,
+  itemid: number,
   title: string | null,
 }>();
 
 const handleDragStart = (e: DragEvent) => {
   if (e.dataTransfer) {
     e.stopPropagation()
-    e.dataTransfer.setData('page-browser-drag-page', props.id.toString())
+    e.dataTransfer.setData('page-browser-drag-page', props.itemid.toString())
   }
 }
 

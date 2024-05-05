@@ -10,7 +10,7 @@
         <span :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">{{ input || "Unnamed" }}</span>
       </div>
       <div class="flex px-2 py-0.5">
-        <IconButton :hover="hover" :newOnClick="() => {}">
+        <IconButton :hover="hover" :newOnClick="() => { pubSub.emit('browser-delete-folder', itemid) }">
           <i class="fa-solid fa-trash-can"></i>
         </IconButton>
         <div class="w-1 flex-none"></div>
@@ -32,10 +32,11 @@
     <div v-if="open" class="ml-2 px-0 border-l border-l-zinc-300"
       :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">
       <template v-for="item in content" :key="item.id">
-        <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :open="item.open" :name="item.name"
-          :content="item.content">
+        <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
+          :name="item.name" :content="item.content">
         </BrowserFolder>
-        <BrowserPage v-else-if="item.type == 'page'" :id="item.id" :title="item.title"></BrowserPage>
+        <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title">
+        </BrowserPage>
       </template>
       <!-- <div v-if="content.length == 0" class="py-1 pl-2">
         Empty
@@ -63,7 +64,7 @@ import { BrowserHierarchy } from './pageBrowser';
 
 
 const props = defineProps<{
-  id: number,
+  itemid: number,
   name: string | null
   open: boolean
   content: BrowserHierarchy
@@ -76,7 +77,7 @@ const inputElement = ref<HTMLElement | null>(null)
 
 const toggleOpen = async () => {
   open.value = !open.value
-  pubSub.emit("folder-open-changed", props.id, open.value)
+  pubSub.emit("folder-open-changed", props.itemid, open.value)
 }
 
 const toggleRename = async () => {
@@ -88,7 +89,7 @@ const toggleRename = async () => {
 const saveName = () => {
   showRename.value = false
   hover.value = false
-  pubSub.emit("change-folder-name", props.id, input.value)
+  pubSub.emit("change-folder-name", props.itemid, input.value)
 }
 
 const rejectName = () => {
@@ -100,7 +101,7 @@ const rejectName = () => {
 const handleDragStart = (e: DragEvent) => {
   if (e.dataTransfer) {
     e.stopPropagation()
-    e.dataTransfer.setData('page-browser-drag-folder', props.id.toString())
+    e.dataTransfer.setData('page-browser-drag-folder', props.itemid.toString())
   }
 }
 
@@ -115,13 +116,13 @@ const handleDrop = async (e: DragEvent) => {
       if (!open.value) toggleOpen()
       await nextTick()
       let pageid = parseInt(e.dataTransfer.getData('page-browser-drag-page'))
-      if (pageid) pubSub.emit("change-page-folder", pageid, props.id)
+      if (pageid) pubSub.emit("change-page-folder", pageid, props.itemid)
     }
     if (e.dataTransfer.getData('page-browser-drag-folder')) {
       if (!open.value) toggleOpen()
       await nextTick()
       let folderid = parseInt(e.dataTransfer.getData('page-browser-drag-folder'))
-      if (folderid) pubSub.emit("change-folder-folder", folderid, props.id)
+      if (folderid) pubSub.emit("change-folder-folder", folderid, props.itemid)
     }
   }
 }

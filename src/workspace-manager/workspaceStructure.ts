@@ -205,9 +205,9 @@ export class WorkspaceStructure {
 
   async folderCreated(id: number) {
     const folder = await window.invoke("db:getFolder", id)
-    if (!folder.status) return
+    if (!folder.status) throw "Could not acquire created folder"
     if (folder.value) this.folders.set(id, folder.value)
-    else this.folders.delete(id)
+    else throw "Created folder does not exist"
     this.recalculate = true
   }
 
@@ -229,6 +229,12 @@ export class WorkspaceStructure {
 
   async folderDeleted(id: number) {
     this.folders.delete(id)
+    this.folders.forEach(item => {
+      if (item.folder == id) item.folder = null
+    })
+    this.pages.forEach(item => {
+      if (item.folder == id) item.folder = null
+    })
     this.recalculate = true
   }
 }
