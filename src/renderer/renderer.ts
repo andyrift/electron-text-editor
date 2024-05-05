@@ -19,3 +19,17 @@ import { WorkspaceStructure } from "@src/workspace-manager/workspaceStructure"
 
 const workspaceManager = new WorkspaceManager()
 const workspaceStructure = new WorkspaceStructure()
+
+const getters = {
+  getWorkspacePages: () => { return workspaceStructure.pages },
+  getWorkspaceFolders: () => { return workspaceStructure.folders },
+  getWorkspaceTrashPages: () => { return workspaceStructure.pages_trash },
+}
+
+declare global {
+  interface Window {
+    getters: typeof getters
+  }
+}
+
+window.getters = getters

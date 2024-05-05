@@ -9,6 +9,13 @@ export class WorkspaceManager {
   executing = false
 
   constructor() {
+    this.pubSub.subscribe("change-page-folder", (child: number, parent: number | null) => {
+      console.log("change page folder", child, parent)
+    })
+
+    this.pubSub.subscribe("change-folder-folder", (child: number, parent: number | null) => {
+      console.log("change folder folder", child, parent)
+    })
     this.addToQueue(this.init)
   }
 
