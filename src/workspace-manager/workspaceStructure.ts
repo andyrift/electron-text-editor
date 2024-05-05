@@ -1,9 +1,13 @@
 import { Folder, Page } from "@src/database/model"
 import { PubSub } from "@src/pubSub"
 
+type StructurePage = {
+  id: number
+}
+
 type StructureFolder = {
   id: number
-  pages: number[]
+  content: Array<StructurePage | StructureFolder>
 }
 
 export class WorkspaceStructure {
@@ -12,7 +16,7 @@ export class WorkspaceStructure {
   pages_trash = new Map<number, Page>()
   folders = new Map<number, Folder>()
 
-  structure: Array<StructureFolder | number> = []
+  structure: Array<StructureFolder | StructurePage> = []
 
   pubSub = PubSub.getInstance()
 
@@ -70,6 +74,12 @@ export class WorkspaceStructure {
         this.folderDeleted(id)
       })
     })
+
+    this.pubSub.subscribe("workspace-structure-update", (id: number) => {
+      this.addToQueue(() => {
+        this.update()
+      })
+    })
   }
 
   async init() {
@@ -86,9 +96,29 @@ export class WorkspaceStructure {
       this.folders.set(folder.id, folder)
     })
 
-    this.recalculateStructure()
+    this.recalculateStructure(false)
 
-    this.pubSub.emit("workspace-structure-init-end")
+    this.pubSub.emit("workspace-structure-init-end", this.structure)
+  }
+
+  async update() {
+    const pages = await window.invoke("db:getAllPages", false)
+    const folders = await window.invoke("db:getAllFolders")
+
+    if (!pages.status) return
+    if (!folders.status) return
+
+    this.pages.clear()
+    this.folders.clear()
+
+    pages.value.forEach(page => {
+      this.pages.set(page.id, page)
+    })
+    folders.value.forEach(folder => {
+      this.folders.set(folder.id, folder)
+    })
+
+    this.recalculateStructure(true)
   }
 
   addToQueue(foo: typeof this.queue[number]) {
@@ -101,31 +131,34 @@ export class WorkspaceStructure {
     while (true) {
       const foo = this.queue.pop()
       if (!foo) break
-      await foo()
+      await foo.call(this)
     }
     if (this.recalculate) {
-      this.recalculateStructure()
+      this.recalculateStructure(true)
       this.recalculate = false
     }
     this.executing = false
   }
 
-  recalculateStructure() {
-    this.structure = []
+  private calculateContent(folderid: number | null) {
+    const str: Array<StructurePage | StructureFolder> = []
     this.pages.forEach(page => {
-      if (!page.folder) this.structure.push(page.id)
+      if (page.folder == folderid) str.push({ 
+        id: page.id 
+      })
     })
     this.folders.forEach(folder => {
-      const pages: number[] = []
-      this.pages.forEach(page => {
-        if (page.folder === folder.id) pages.push(page.id)
-      })
-      this.structure.push({
-        id: folder.id,
-        pages
+      if (folder.folder == folderid) str.push({ 
+        id: folder.id, 
+        content: this.calculateContent(folder.id) 
       })
     })
-    this.pubSub.emit("workspace-structure-changed")
+    return str
+  }
+
+  recalculateStructure(emit: boolean) {
+    this.structure = this.calculateContent(null)
+    if(emit) this.pubSub.emit("workspace-structure-changed", this.structure)
   }
 
   async pageSaved(id: number) {

@@ -30,6 +30,12 @@
             <i class="fa-solid fa-rotate-right mr-2"></i> Force Reload
           </div>
         </div>
+        <div class="text-sm border-b-2 flex flex-col p-1">
+          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+            @click="pubSub.emit('workspace-structure-update'); show = false;">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Update Page Browser
+          </div>
+        </div>
         <div class="py-1 px-3">
           <div class="w-fit h-fit bg-white flex-col text-xs font-normal text-zinc-500 cursor-default">
             <div>
