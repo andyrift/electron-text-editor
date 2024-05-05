@@ -1,11 +1,13 @@
 <template>
-  <div class="text-zinc-700 bg-white" :draggable="draggable" @drop="handleDrop" @dragover="handleDragover"
-    @dragend="draggable=false" @dragstart="handleDragStart">
-    <div class="flex hover:bg-zinc-200" @mouseenter="hover = true" @mouseleave="hover = false">
-      <div class="cursor-pointer grow select-none whitespace-nowrap text-ellipsis overflow-hidden px-2 py-0.5"
+  <div class="text-zinc-700" @drop="handleDrop" @dragover="handleDragover" @dragend="draggable=false">
+    <div :draggable="draggable" @dragstart="handleDragStart" class="flex hover:bg-zinc-200" @mouseenter="hover = true"
+      @mouseleave="hover = false">
+      <div class="cursor-pointer grow select-none whitespace-nowrap text-ellipsis overflow-hidden pr-2 py-0.5"
         @click="toggleOpen" @mousedown="draggable = true" @mouseup="draggable = false">
-        <i class="fa-solid fa-folder mr-2"></i>
-        <span :class="content.length == 0 ? 'text-gray-700 text-opacity-50' : ''">{{ input || "Unnamed" }}</span>
+        <div class="ml-1 mr-1.5 w-3 inline-block text-center">
+          <i class="fa-solid text-xs" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+        </div>
+        <span :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">{{ input || "Unnamed" }}</span>
       </div>
       <div class="flex px-2 py-0.5">
         <IconButton :hover="hover" :newOnClick="() => {}">
@@ -27,7 +29,7 @@
         </div>
       </div>
     </div>
-    <div v-if="open" class="ml-1 px-0 border-l-2 border-l-gray-300"
+    <div v-if="open" class="ml-2 px-0 border-l border-l-zinc-300"
       :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">
       <template v-for="item in content" :key="item.id">
         <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :name="item.name" :content="item.content">

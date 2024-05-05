@@ -1,7 +1,7 @@
 <template>
   <div @mouseenter="hover = true" @mouseleave="hover = false" draggable="true" @dragstart="handleDragStart"
     class="px-2 py-0.5 cursor-pointer overflow-visible  text-zinc-900 /border-b border-b-zinc-300 /border-x-2 border-x-zinc-500 hover:bg-zinc-200 text-left whitespace-pre hover:text-wrap"
-    :class="false ? 'bg-zinc-200' : 'bg-white'">
+    :class="false ? 'bg-zinc-200' : ''">
     <div class="flex">
       <div class="text-ellipsis overflow-hidden select-none">
         <i class="fa-solid fa-file-lines mr-2 text-zinc-700"></i><span>{{ title || "Untitled" }}</span>

@@ -1,13 +1,21 @@
 <template>
-  <div class="h-full py-1 px-1 text-sm /border border-black" @drop="handleDrop" @dragover="handleDragover">
+  <div class="h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
     <template v-for="item in structure" :key="item.id">
-      <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :name="item.name" :content="item.content"></BrowserFolder>
+      <BrowserFolder v-if="item.type == 'folder'" :id="item.id" :name="item.name" :content="item.content">
+      </BrowserFolder>
       <BrowserPage v-else-if="item.type == 'page'" :id="item.id" :title="item.title"></BrowserPage>
     </template>
     <button @click="() => { pubSub.emit('create-page-browser') }"
-      class="px-2 py-1 mt-1 w-full overflow-x-hidden text-zinc-600 hover:bg-zinc-200 text-left font-medium outline-none">
+      class="px-2 py-0.5 mt-1 w-1/2 overflow-x-hidden text-zinc-500 hover:bg-zinc-200 text-left font-medium outline-none">
       <i class="fa-solid fa-plus mr-2"></i>
-      <span>{{ "Add a page" }}</span>
+      <i class="fa-solid fa-file-lines mr-2"></i>
+      <span>{{ "New page" }}</span>
+    </button>
+    <button @click="() => { pubSub.emit('create-folder-browser') }"
+      class="px-2 py-0.5 mt-1 w-1/2 overflow-x-hidden text-zinc-500 hover:bg-zinc-200 text-left font-medium outline-none">
+      <i class="fa-solid fa-plus mr-2"></i>
+      <i class="fa-solid fa-folder mr-2"></i>
+      <span>{{ "New folder" }}</span>
     </button>
   </div>
 </template>
