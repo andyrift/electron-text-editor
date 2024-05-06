@@ -37,5 +37,5 @@ export const nodes = {
   table_header,
 
   code_block, // block
-  page_link
+  page_link,
 }

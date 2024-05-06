@@ -9,13 +9,13 @@ export const mergeClasses = (left: string, right: string): string => {
 }
 
 export const matchColor = (node: Node): string => {
-  let color = colors[node.attrs.bgcolor]
+  let color = colors[node.attrs["bgcolor"]]
   if (color) return 'bg-' + color.class
   return ''
 }
 
 export const matchHeading = (node: Node): string => {
-  switch (node.attrs.level) {
+  switch (node.attrs["level"]) {
     case (1):
       return "text-3xl mt-8 mb-3"
     case (2):
