@@ -9,8 +9,12 @@ export const hintPlugin = (text: string) => {
         const decorations = [] as Decoration[];
 
         const decorate = (node: Node, pos: number) => {
-          if (state.selection.empty && node.type == state.schema.nodes.paragraph && 
-            node.childCount === 0 && state.selection.$from.pos == pos + 1) {
+          if (
+            state.selection.empty && 
+            node.type.name == "paragraph" && 
+            node.childCount === 0 && 
+            state.selection.$from.pos == pos + 1
+          ) {
 
             let placeholder = document.createElement("span");
             placeholder.setAttribute('placeholder', text);
@@ -20,6 +24,7 @@ export const hintPlugin = (text: string) => {
 
             return false;
           }
+          return
         }
 
         state.doc.descendants(decorate)

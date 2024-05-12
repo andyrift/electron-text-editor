@@ -3,39 +3,41 @@ import { type DirectEditorProps, EditorView } from "prosemirror-view"
 
 import { Node, Schema } from "prosemirror-model"
 
-// import { history } from "prosemirror-history"
-// import {
-//   dragPlugin,
-//   keymapPlugin,
-//   menuPlugin,
-//   wordCountPlugin,
-//   dropCursor,
-//   gapCursor,
-//   hintPlugin,
-//   titlePlaceholderPlugin,
-//   tableEditing,
-//   titleUpdatePlugin,
-//   tabInterceptPlugin,
-//   stateUpdatePlugin,
-//   listFixPlugin,
-//   posPlugin,
-//   addParagraphPlugin
-// } from "./plugins"
+import {
+  keymapPlugin,
+  menuPlugin,
+  wordCountPlugin,
+  dropCursor,
+  hintPlugin,
+  tabInterceptPlugin,
+  listFixPlugin,
+  
+  gapCursor,
+  tableEditing,
+  columnResizing,
+  history,
+
+  // in testing
+  dragPlugin,
+  posPlugin
+} from "./plugins"
 
 import { schema } from "./schema"
 
 import { Menu } from "./menu"
 import { Commands } from "./commands"
-import { CheckView, PageLinkView } from "./nodeViews"
-import { TableView, columnResizing } from "prosemirror-tables"
+
+import { TableView } from "prosemirror-tables"
+
 import { DocumentJson, EditorStateJson } from "@src/database/model"
 
 export class Editor {
   plugins: Plugin[]
   schema: Schema
   commands: Commands
-  // menu: Menu
   view: EditorView | null = null
+  
+  // menu: Menu
 
   private static _instance: Editor
 
@@ -55,22 +57,21 @@ export class Editor {
     // this.menu = new Menu(schema, this.commands)
 
     this.plugins = [
-      // gapCursor(),
-      // keymapPlugin(this.commands),
+      gapCursor(),
+      keymapPlugin(this.commands),
       // menuPlugin(this.menu),
       // wordCountPlugin(this.wordCounter),
-      // dropCursor(),
+      dropCursor(),
       // titlePlaceholderPlugin("Untitled"),
-      // hintPlugin("Write something, '/' for commands..."),
+      hintPlugin("Write something..."),
       // titleUpdatePlugin(this.emitTitleUpdate),
       // stateUpdatePlugin(this.emitStateUpdate),
       // dragPlugin(),
-      // listFixPlugin(),
-      // addParagraphPlugin(),
-      // columnResizing(),
-      // tableEditing({ allowTableNodeSelection: true }),
-      // history(),
-      // tabInterceptPlugin(),
+      listFixPlugin(),
+      columnResizing(),
+      tableEditing({ allowTableNodeSelection: true }),
+      history(),
+      tabInterceptPlugin(),
       // posPlugin(this.rectangles),
     ]
 
@@ -93,9 +94,9 @@ export class Editor {
     const props: DirectEditorProps = {
       state: this.createState(null),
       nodeViews: {
-        check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
         table(node) { return new TableView(node, 40) },
-        page_link(node, view, getPos) { return new PageLinkView(node, view, getPos, cmd) },
+        // check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
+        // page_link(node, view, getPos) { return new PageLinkView(node, view, getPos, cmd) },
       },
     }
 

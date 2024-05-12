@@ -1,10 +1,11 @@
-export * from "./testPlugins";
-export * from "./smallPlugins";
-export * from "./keymapPlugin";
-export * from "./menuPlugin";
-export * from "./wordCountPlugin";
-export * from "./hintPlugin";
-export * from "./titlePlaceholderPlugin";
-export { dropCursor } from "./dropCursor";
-export { gapCursor } from "prosemirror-gapcursor";
-export { tableEditing } from "prosemirror-tables";
+export * from "./testPlugins"
+export * from "./smallPlugins"
+export * from "./keymapPlugin"
+export * from "./menuPlugin"
+export * from "./wordCountPlugin"
+export * from "./hintPlugin"
+export * from "./titlePlaceholderPlugin"
+export { dropCursor } from "./dropCursor"
+export { gapCursor } from "prosemirror-gapcursor"
+export { columnResizing, tableEditing } from "prosemirror-tables"
+export { history } from "prosemirror-history"
