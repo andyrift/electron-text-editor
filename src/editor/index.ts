@@ -1,2 +1,2 @@
-export { Editor } from './editor'
+export { useEditor } from './useEditor'
 export { colors } from './colors'
