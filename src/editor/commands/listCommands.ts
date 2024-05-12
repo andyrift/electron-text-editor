@@ -31,14 +31,17 @@ export function wrapInList(listType: NodeType, attrs: Attrs | null = null): Comm
 function doWrapInList(tr: Transaction, range: NodeRange, wrappers: { type: NodeType, attrs?: Attrs | null }[],
   joinBefore: boolean, listType: NodeType) {
   let content = Fragment.empty
-  for (let i = wrappers.length - 1; i >= 0; i--)
-    content = Fragment.from(wrappers[i].type.create(wrappers[i].attrs, content))
+  wrappers.toReversed().forEach(wrapper => {
+    content = Fragment.from(wrapper.type.create(wrapper.attrs, content))
+  })
 
   tr.step(new ReplaceAroundStep(range.start - (joinBefore ? 2 : 0), range.end, range.start, range.end,
     new Slice(content, 0, 0), wrappers.length, true))
 
   let found = 0
-  for (let i = 0; i < wrappers.length; i++) if (wrappers[i].type == listType) found = i + 1
+  wrappers.forEach((wrapper, i) => {
+    if (wrapper.type == listType) found = i + 1
+  })
   let splitDepth = wrappers.length - found
 
   let splitPos = range.start + wrappers.length - (joinBefore ? 2 : 0), parent = range.parent
@@ -83,6 +86,7 @@ export function splitListItem(itemType: NodeType, itemAttrs?: Attrs): Command {
         tr.doc.nodesBetween(start, tr.doc.content.size, (node, pos) => {
           if (sel > -1) return false
           if (node.isTextblock && node.content.size == 0) sel = pos + 1
+          return
         })
         if (sel > -1) tr.setSelection(Selection.near(tr.doc.resolve(sel)))
         dispatch(tr.scrollIntoView())

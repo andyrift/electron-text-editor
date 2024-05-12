@@ -13,18 +13,16 @@ import { splitBlockAs } from "prosemirror-commands"
 
 export function chainCommands(...commands: readonly Command[]): Command {
   return function (state, dispatch, view) {
-    for (let i = 0; i < commands.length; i++)
-      if (commands[i](state, dispatch, view)) {
-        //console.log(i, commands[i]);
-        return true
-      }
-    return false
+    return commands.some(command => {
+      if (command(state, dispatch, view)) return true
+      return
+    })
   }
 }
 
-export const tab_code: Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+export function tab_code(state: EditorState, dispatch?: (tr: Transaction) => void): boolean {
   if (state.selection.$from.parent != state.selection.$to.parent) return false;
-  if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
+  if (state.selection.$from.parent.type.name != "code_block") return false;
   if (dispatch) {
     let tr = state.tr;
     tr.replaceSelectionWith(state.schema.text('\t'));
@@ -33,25 +31,22 @@ export const tab_code: Command = (state: EditorState, dispatch?: (tr: Transactio
   return true;
 }
 
-export const shift_tab_code: Command = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+export function shift_tab_code(state: EditorState, dispatch?: (tr: Transaction) => void): boolean {
   if (state.selection.$from.parent != state.selection.$to.parent) return false;
-  if (state.selection.$from.parent.type != state.schema.nodes.code_block) return false;
+  if (state.selection.$from.parent.type.name != "code_block") return false;
   if (dispatch) { }
   return true;
 }
 
-export const exitTitle = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+export function exitTitle(state: EditorState, dispatch?: (tr: Transaction) => void): boolean {
   let active = false;
-  let node: Node | null = null;
-  for (let i = 0; i < state.selection.ranges.length; i++) {
-    let { $from, $to } = state.selection.ranges[i]
-    state.doc.nodesBetween($from.pos, $to.pos, (n, pos, parent, index) => {
-      if (n.hasMarkup(state.schema.nodes.title)) {
+  state.selection.ranges.forEach(({ $from, $to }) => {
+    state.doc.nodesBetween($from.pos, $to.pos, n => {
+      if (n.hasMarkup(state.schema.nodes["title"]!)) {
         active = true;
-        node = n;
       }
     })
-  }
+  })
   if (!active) return false;
   if (dispatch) {
     let tr = state.tr;
@@ -91,7 +86,7 @@ export const selectBlock: Command = (state: EditorState, dispatch?: (tr: Transac
 export const deleteColumns = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
   if (!state.selection.empty) return false
   let before = state.doc.resolve(state.selection.$from.before());
-  if (before.parent.type != state.schema.nodes.column) return false
+  if (before.parent.type.name != "column") return false
   if (before.parent.content.size != 2) return false;
   let after = state.doc.resolve(before.after())
   if (state.doc.nodeAt(after.pos)?.content.size != 2) return false;
@@ -133,8 +128,8 @@ export const setNodeColor = (color: string) => (state: EditorState, dispatch: ((
 export const toggleCheck = (pos: number) => (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
   let node = state.doc.nodeAt(pos);
   if (!node) return false;
-  if (node.type != state.schema.nodes.check) return false;
-  let check = node.attrs.check;
+  if (node.type.name != "check") return false;
+  let check = node.attrs["check"];
   if (check == 'false') check = 'true'
   else check = 'false'
 
@@ -148,9 +143,9 @@ export const toggleCheck = (pos: number) => (state: EditorState, dispatch: ((tr:
 }
 
 const splitNode = (schema: Schema) => (node: Node, atEnd: boolean) : { type: NodeType, attrs ?: Attrs } | null => {
-  if (node.type == schema.nodes.check) {
+  if (node.type.name == "check") {
     if (node.content.size == 0) return null
-    return { type: schema.nodes.check, attrs: { bgcolor: node.attrs.bgcolor } }
+    return { type: schema.nodes["check"]!, attrs: { bgcolor: node.attrs["bgcolor"] } }
   }
   return null
 }
@@ -161,7 +156,7 @@ export function setPageLink(pos: number, id: number | null) {
   return (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
     let node = state.doc.nodeAt(pos);
     if (!node) return false;
-    if (node.type != state.schema.nodes.page_link) return false;
+    if (node.type.name != "page_link") return false;
 
 
     if (dispatch) {
@@ -195,7 +190,7 @@ export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction
   let poss: number[] = []
   if (!sel.empty) {
     if (sel instanceof NodeSelection) {
-      if (sel.node.type != state.schema.nodes.check) return false
+      if (sel.node.type.name != "check") return false
     }
     else if (sel instanceof CellSelection) return false
   }
@@ -203,11 +198,11 @@ export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction
   if (sel instanceof TextSelection) {
     let flag = true;
     state.doc.nodesBetween(sel.from, sel.to, (node, pos) => {
-      if (node.type != state.schema.nodes.check && node.type != state.schema.nodes.text) {
+      if (node.type.name != "check" && node.type.name != "text") {
         //flag = false;
         //console.log(node.type.name)
         //return false;
-      } else if (node.type != state.schema.nodes.text) {
+      } else if (node.type.name != "text") {
         poss.push(pos)
       }
     })
@@ -219,12 +214,12 @@ export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction
     let tr = state.tr;
     let sel = tr.selection;
     if (sel instanceof NodeSelection) {
-      tr.setBlockType(sel.from, sel.to, state.schema.nodes.paragraph, { bgcolor: sel.node.attrs.bgcolor })
+      tr.setBlockType(sel.from, sel.to, state.schema.nodes["paragraph"]!, { bgcolor: sel.node.attrs["bgcolor"] })
     } else if (sel instanceof TextSelection){
       poss.forEach(pos => {
         let node = tr.doc.nodeAt(tr.mapping.map(pos))
         if (node) {
-          tr.setBlockType(pos + 1, undefined, state.schema.nodes.paragraph, { bgcolor: node.attrs.bgcolor })
+          tr.setBlockType(pos + 1, undefined, state.schema.nodes["paragraph"]!, { bgcolor: node.attrs["bgcolor"] })
         }
       })
     } else {
@@ -239,21 +234,21 @@ export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction
 
 export const deleteCheck = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
   if (!state.selection.empty) return false
-  if (state.selection.$anchor.parent.type != state.schema.nodes.check) return false;
+  if (state.selection.$anchor.parent.type.name != "check") return false;
 
-  let before = state.doc.resolve(state.selection.$from.before());
+  const before = state.doc.resolve(state.selection.$from.before());
 
   if (state.selection.from != before.pos + 1) return false;
   
-  let node = state.doc.nodeAt(before.pos)
+  const node = state.doc.nodeAt(before.pos)
   if (!node) return false
-  if (node.type != state.schema.nodes.check) return false;
-  let pos = before.pos
+  if (node.type.name != "check") return false;
+  const pos = before.pos
 
 
   if (dispatch) {
     let tr = state.tr;
-    tr.setBlockType(pos + 1, undefined, state.schema.nodes.paragraph, { bgcolor: node.attrs.bgcolor })
+    tr.setBlockType(pos + 1, undefined, state.schema.nodes["paragraph"]!, { bgcolor: node.attrs["bgcolor"] })
     dispatch(tr.scrollIntoView())
   }
 

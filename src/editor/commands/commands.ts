@@ -154,7 +154,7 @@ export class Commands {
     this.enter = chainCommands(
       exitTitle,
       newlineInCode,
-      splitListItem(schema.nodes.list_item),
+      splitListItem(schema.nodes["list_item"]!),
       createParagraphNear,
       liftEmptyBlock,
       splitBlock(schema)
@@ -162,39 +162,39 @@ export class Commands {
     this.ctrl_enter = chainCommands(
       exitTitle,
       exitCode,
-      hardBreak(schema.nodes.hard_break)
+      hardBreak(schema.nodes["hard_break"]!)
     );
     this.tab = chainCommands(
       tab_code,
-      sinkListItem(schema.nodes.list_item),
-      wrapIn(schema.nodes.blockquote)
+      sinkListItem(schema.nodes["list_item"]!),
+      wrapIn(schema.nodes["blockquote"]!)
     );
     this.shift_tab = chainCommands(
       shift_tab_code,
       checkToParagraph,
-      liftListItem(schema.nodes.list_item),
+      liftListItem(schema.nodes["list_item"]!),
       lift
     );
-    this.bulletList = wrapInList(schema.nodes.bullet_list);
-    this.orderedList = wrapInList(schema.nodes.ordered_list);
-    this.blockquote = wrapIn(schema.nodes.blockquote);
-    this.horizontalRule = horizontalRule(schema.nodes.horizontal_rule);
+    this.bulletList = wrapInList(schema.nodes["bullet_list"]!);
+    this.orderedList = wrapInList(schema.nodes["ordered_list"]!);
+    this.blockquote = wrapIn(schema.nodes["blockquote"]!);
+    this.horizontalRule = horizontalRule(schema.nodes["horizontal_rule"]!);
 
     this.block = {
-      paragraph: setBlockType(schema.nodes.paragraph),
-      h1: setBlockType(schema.nodes.heading, { level: 1 }),
-      h2: setBlockType(schema.nodes.heading, { level: 2 }),
-      h3: setBlockType(schema.nodes.heading, { level: 3 }),
-      code: setBlockType(schema.nodes.code_block),
-      check: setBlockType(schema.nodes.check),
+      paragraph: setBlockType(schema.nodes["paragraph"]!),
+      h1: setBlockType(schema.nodes["heading"]!, { level: 1 }),
+      h2: setBlockType(schema.nodes["heading"]!, { level: 2 }),
+      h3: setBlockType(schema.nodes["heading"]!, { level: 3 }),
+      code: setBlockType(schema.nodes["code_block"]!),
+      check: setBlockType(schema.nodes["check"]!),
     };
 
     this.mark = {
-      bold: toggleMark(schema.marks.strong),
-      italic: toggleMark(schema.marks.em),
-      underline: toggleMark(schema.marks.ins),
-      strikethrough: toggleMark(schema.marks.del),
-      code: toggleMark(schema.marks.code)
+      bold: toggleMark(schema.marks["strong"]!),
+      italic: toggleMark(schema.marks["em"]!),
+      underline: toggleMark(schema.marks["ins"]!),
+      strikethrough: toggleMark(schema.marks["del"]!),
+      code: toggleMark(schema.marks["code"]!)
     }
 
   }
