@@ -6,6 +6,7 @@ import { MarkType, NodeType, Schema, type Attrs } from "prosemirror-model";
 import type { Command } from "prosemirror-state";
 
 import { colors } from "./colors";
+import { IMenuState } from "./plugins";
 
 export type MenuCommands = { [id: string]: (Command) };
 export type MenuMarks = { [id: string]: MarkType };
@@ -21,7 +22,7 @@ export type MenuStates = Ref<{
   }
 }>;
 
-export class Menu {
+export class MenuState implements IMenuState {
   states: MenuStates;
   commands: MenuCommands;
   nodes: MenuNodes;
@@ -128,46 +129,46 @@ export class Menu {
 
     const nodes: MenuNodes = {};
 
-    nodes["title"] = { nodetype: schema.nodes.title };
-    nodes["paragraph"] = { nodetype: schema.nodes.paragraph };
-    nodes["h1"] = { nodetype: schema.nodes.heading, attrs: { level: 1 } };
-    nodes["h2"] = { nodetype: schema.nodes.heading, attrs: { level: 2 } };
-    nodes["h3"] = { nodetype: schema.nodes.heading, attrs: { level: 3 } };
-    nodes["check"] = { nodetype: schema.nodes.check };
-    nodes["code_block"] = { nodetype: schema.nodes.code_block };
+    nodes["title"] = { nodetype: schema.nodes["title"]! };
+    nodes["paragraph"] = { nodetype: schema.nodes["paragraph"]! };
+    nodes["h1"] = { nodetype: schema.nodes["heading"]!, attrs: { level: 1 } };
+    nodes["h2"] = { nodetype: schema.nodes["heading"]!, attrs: { level: 2 } };
+    nodes["h3"] = { nodetype: schema.nodes["heading"]!, attrs: { level: 3 } };
+    nodes["check"] = { nodetype: schema.nodes["check"]! };
+    nodes["code_block"] = { nodetype: schema.nodes["code_block"]! };
 
-    nodes["ul"] = { nodetype: schema.nodes.bullet_list };
-    nodes["ol"] = { nodetype: schema.nodes.ordered_list };
+    nodes["ul"] = { nodetype: schema.nodes["bullet_list"]! };
+    nodes["ol"] = { nodetype: schema.nodes["ordered_list"]! };
 
     this.nodes = nodes;
 
 
     const marks: MenuMarks = {};
 
-    marks["bold"] = schema.marks.strong;
-    marks["italic"] = schema.marks.em;
-    marks["underline"] = schema.marks.ins;
-    marks["strikethrough"] = schema.marks.del;
-    marks["code"] = schema.marks.code;
+    marks["bold"] = schema.marks["strong"]!;
+    marks["italic"] = schema.marks["em"]!;
+    marks["underline"] = schema.marks["ins"]!;
+    marks["strikethrough"] = schema.marks["del"]!;
+    marks["code"] = schema.marks["code"]!;
 
     this.marks = marks;
 
 
     const commandSets: MenuSets = {};
     for (let key in this.commands) {
-      commandSets[key] = (state) => { this.states.value[key].applicable = state }
+      commandSets[key] = (state) => { this.states.value[key]!.applicable = state }
     }
     this.commandSetters = commandSets;
 
     const markSetters: MenuSets = {};
     for (let key in this.marks) {
-      markSetters[key] = (state) => { this.states.value[key].mark = state }
+      markSetters[key] = (state) => { this.states.value[key]!.mark = state }
     }
     this.markSetters = markSetters;
 
     const nodeSetters: MenuSets = {};
     for (let key in this.nodes) {
-      nodeSetters[key] = (state) => { this.states.value[key].node = state }
+      nodeSetters[key] = (state) => { this.states.value[key]!.node = state }
     }
     this.nodeSetters = nodeSetters;
 
@@ -180,7 +181,7 @@ export class Menu {
     const createNormal = (key: string) => {
       this.buttons.value[key] = () => {
         editorView.focus();
-        this.commands[key](editorView.state, editorView.dispatch, editorView);
+        this.commands[key]!(editorView.state, editorView.dispatch, editorView);
       }
     };
 

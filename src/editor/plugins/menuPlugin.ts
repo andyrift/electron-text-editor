@@ -1,16 +1,26 @@
 import { type Command, Plugin } from "prosemirror-state"
 import { type Attrs, MarkType, NodeType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
-import type { Menu } from "../menu";
 
-export interface MenuView {
-  editorView: EditorView,
-  commandApplicable: Array<{ command: Command, set: Function }>
-  markActive: Array<{ marktype: MarkType, set: Function }>,
-  nodeActive: Array<{ nodetype: NodeType, attrs: Attrs | undefined, set: Function }>,
+type Setter = (value: boolean) => void
+
+export interface IMenuState {
+  commands: {[id: string]: Command}
+  marks: { [id: string]: MarkType }
+  nodes: { [id: string]: {nodetype: NodeType, attrs?: Attrs } }
+  commandSetters: { [id: string]: Setter }
+  markSetters: { [id: string]: Setter }
+  nodeSetters: { [id: string]: Setter }
+  createButtons(view: EditorView): void
 }
 
 export class MenuView {
+
+  editorView: EditorView
+  commandApplicable: Array<{ command: Command, set: Function }>
+  markActive: Array<{ marktype: MarkType, set: Function }>
+  nodeActive: Array<{ nodetype: NodeType, attrs: Attrs | undefined, set: Function }>
+
   constructor(editorView: EditorView,
     commandApplicable: MenuView["commandApplicable"],
     markActive: MenuView["markActive"],
@@ -57,28 +67,28 @@ export class MenuView {
   }
 }
 
-export const menuPlugin = (menu : Menu) => {
+export const menuPlugin = (menu : IMenuState) => {
   return new Plugin({
     view(editorView) {
       let commandApplicable: MenuView["commandApplicable"] = [];
       let markActive: MenuView["markActive"] = [];
       let nodeActive: MenuView["nodeActive"] = [];
 
-      for (let key in menu.commands) {
-        let command = menu.commands[key];
-        let set = menu.commandSetters[key];
+      for (const key in menu.commands) {
+        let command = menu.commands[key]!;
+        let set = menu.commandSetters[key]!;
         commandApplicable.push({ command, set });
       }
 
-      for (let key in menu.marks) {
-        let marktype = menu.marks[key];
-        let set = menu.markSetters[key];
+      for (const key in menu.marks) {
+        let marktype = menu.marks[key]!;
+        let set = menu.markSetters[key]!;
         markActive.push({ marktype, set });
       }
 
-      for (let key in menu.nodes) {
-        let { nodetype, attrs } = menu.nodes[key];
-        let set = menu.nodeSetters[key];
+      for (const key in menu.nodes) {
+        let { nodetype, attrs } = menu.nodes[key]!;
+        let set = menu.nodeSetters[key]!;
         nodeActive.push({ nodetype, attrs, set });
       }
 

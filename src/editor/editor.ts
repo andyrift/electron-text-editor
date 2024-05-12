@@ -24,7 +24,7 @@ import {
 
 import { schema } from "./schema"
 
-import { Menu } from "./menu"
+import { MenuState } from "./menuState"
 import { Commands } from "./commands"
 
 import { TableView } from "prosemirror-tables"
@@ -36,8 +36,8 @@ export class Editor {
   schema: Schema
   commands: Commands
   view: EditorView | null = null
-  
-  // menu: Menu
+
+  menuState: MenuState
 
   private static _instance: Editor
 
@@ -54,12 +54,12 @@ export class Editor {
     this.schema = schema
     this.commands = new Commands(schema)
 
-    // this.menu = new Menu(schema, this.commands)
+    this.menuState = new MenuState(schema, this.commands)
 
     this.plugins = [
       gapCursor(),
       keymapPlugin(this.commands),
-      // menuPlugin(this.menu),
+      menuPlugin(this.menuState),
       // wordCountPlugin(this.wordCounter),
       dropCursor(),
       // titlePlaceholderPlugin("Untitled"),
