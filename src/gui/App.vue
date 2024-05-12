@@ -4,7 +4,7 @@
     <div class="h-full w-full overflow-x-clip flex flex-col transition-all">
       <Navbar />
       <div class="p-2 h-full overflow-y-auto">
-        <!-- <Editor/> -->
+        <Editor />
         <Querier />
       </div>
     </div>
@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 
-import { Querier, Navbar, Sidebar } from '@components'
+import { Querier, Navbar, Sidebar, Editor } from '@components'
 
 import { PubSub } from '@src/pubSub'
 const pubSub = PubSub.getInstance()
