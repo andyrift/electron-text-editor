@@ -2,21 +2,36 @@
   <div v-show="show" :style="{ width: transitionWidth + 'px' }" class="relative flex-none">
     <div :style="{ width: width + 'px' }"
       class="absolute right-0 h-full bg-white border-r border-zinc-300 flex flex-col flex-none">
-      <div class="pl-5 border-b border-zinc-300 whitespace-nowrap flex items-center h-10 flex-none">
-        <div class="py-1">
-          <div>Better Editor</div>
+      <div class="pl-5 border-b border-zinc-300 whitespace-nowrap flex items-center h-10 flex-none select-none">
+        <div class="py-1 cursor-default">
+          <div>Browser</div>
         </div>
         <div class="grow"></div>
         <i class="fa-solid fa-angles-left cursor-pointer mr-3 hover:bg-zinc-200 my-1 p-2 rounded"
           @click="pubSub.emit('toggle-sidebar', false)"></i>
       </div>
-      <div class="sidebar h-full w-full overflow-y-auto bg-zinc-100">
-        <PageBrowser />
+      <div class="divide-y divide-zinc-300 h-full flex flex-col">
+        <div
+          class="px-2 py-1 w-full overflow-x-hidden text-sm font-medium text-gray-900 hover:bg-gray-200 text-left outline-none flex-none select-none cursor-pointer">
+          <i class="fa-solid fa-chevron-down mr-2"></i>
+          <span>Page Browser</span>
+        </div>
+        <div class="sidebar h-full w-full overflow-y-auto bg-zinc-100">
+          <PageBrowser />
+        </div>
+        <div class="border-t border-zinc-300">
+          <div
+            class="px-2 py-1 w-full overflow-x-hidden text-sm font-medium text-gray-900 hover:bg-gray-200 text-left outline-none flex-none select-none cursor-pointer">
+            <i class="fa-solid fa-chevron-down mr-2"></i>
+            <i class="fa-solid fa-trash-can mr-2"></i>
+            <span>Trash can</span>
+          </div>
+        </div>
+        <div class="sidebar h-full w-full overflow-y-auto bg-zinc-100">
+          <TrashBrowser />
+        </div>
       </div>
-    <div class="border-t border-zinc-300">
-      <!-- <TrashButton /> -->
     </div>
-  </div>
   </div>
 
 </template>
@@ -24,6 +39,7 @@
 <script setup lang="ts">
 
 import PageBrowser from "../page-browser/PageBrowser.vue";
+import TrashBrowser from "../trash-browser/TrashBrowser.vue";
 
 import { ref } from "vue"
 import { FixedSquaredTransition } from "@utils"
