@@ -31,7 +31,7 @@
     </div>
     <div v-if="open" class="ml-2 px-0 border-l border-l-zinc-300"
       :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">
-      <template v-for="item in content" :key="item.id">
+      <template v-for="item in content" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
         <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
           :name="item.name" :content="item.content">
         </BrowserFolder>

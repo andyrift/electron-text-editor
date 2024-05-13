@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
-    <template v-for="item in browserStructure" :key="item.id">
+    <template v-for="item in browserStructure" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
       <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
         :name="item.name" :content="item.content">
       </BrowserFolder>
