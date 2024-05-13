@@ -27,7 +27,7 @@ import { schema } from "./schema"
 import { MenuState } from "./menuState"
 import { Commands } from "./commands"
 
-import { TableView, TitleView } from "./node-views"
+import { CheckView, TableView, TitleView } from "./node-views"
 
 import { DocumentJson, EditorStateJson } from "@src/database/model"
 
@@ -96,7 +96,7 @@ export class Editor {
       nodeViews: {
         table(node) { return new TableView(node, 40) },
         title(node, view, getPos) { return new TitleView(node, view, getPos) },
-        // check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
+        check(node, view, getPos) { return new CheckView(node, view, getPos, cmd) },
         // page_link(node, view, getPos) { return new PageLinkView(node, view, getPos, cmd) },
       },
     }
