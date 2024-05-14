@@ -12,7 +12,15 @@ export type StructureFolder = {
 
 export type StructureHierarchy = Array<StructurePage | StructureFolder>
 
-export class WorkspaceStructure {
+export interface IWorkspaceStructure {
+  getPageMap(): Map<number, Page>
+  getFolderMap(): Map<number, Folder>
+  getPageIDs(): number[]
+  getPageIDsSorted(): number[]
+  getStructure(): StructureHierarchy
+}
+
+export class WorkspaceStructure implements IWorkspaceStructure {
 
   pages = new Map<number, Page>()
   pages_trash = new Map<number, Page>()
@@ -90,7 +98,7 @@ export class WorkspaceStructure {
     })
   }
 
-  async init() {
+  private async init() {
     const pages = await window.invoke("db:getAllPages", false)
     const folders = await window.invoke("db:getAllFolders")
 
@@ -109,7 +117,7 @@ export class WorkspaceStructure {
     this.pubSub.emit("workspace-structure-init-end", this.structure)
   }
 
-  async update() {
+  private async update() {
     const pages = await window.invoke("db:getAllPages", false)
     const folders = await window.invoke("db:getAllFolders")
 
@@ -129,12 +137,12 @@ export class WorkspaceStructure {
     this.recalculateStructure(true)
   }
 
-  addToQueue(foo: typeof this.queue[number]) {
+  private addToQueue(foo: typeof this.queue[number]) {
     this.queue.unshift(foo)
     this.executeQueue()
   }
 
-  async executeQueue() {
+  private async executeQueue() {
     if (this.executing) return
     while (true) {
       const foo = this.queue.pop()
@@ -186,12 +194,12 @@ export class WorkspaceStructure {
     return str
   }
 
-  recalculateStructure(emit: boolean) {
+  private recalculateStructure(emit: boolean) {
     this.structure = this.calculateContent(null)
     if(emit) this.pubSub.emit("workspace-structure-changed", this.structure)
   }
 
-  async pageSaved(id: number) {
+  private async pageSaved(id: number) {
     const page = await window.invoke("db:getPage", id)
     if (!page.status) return
     if (page.value) this.pages.set(id, page.value)
@@ -200,7 +208,7 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async pageMoved(id: number) {
+  private async pageMoved(id: number) {
     const page = await window.invoke("db:getPage", id)
     if (!page.status) throw "Page not found, could not update structure"
     if (page.value) this.pages.set(id, page.value)
@@ -208,12 +216,12 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async pageTrashed(id: number) {
+  private async pageTrashed(id: number) {
     this.pages.delete(id)
     this.recalculate = true
   }
 
-  async pageRestored(id: number) {
+  private async pageRestored(id: number) {
     const page = await window.invoke("db:getPage", id)
     if (!page.status) return
     if (page.value) this.pages.set(id, page.value)
@@ -221,12 +229,12 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async pageDeleted(id: number) {
+  private async pageDeleted(id: number) {
     this.pages.delete(id)
     this.recalculate = true
   }
 
-  async folderCreated(id: number) {
+  private async folderCreated(id: number) {
     const folder = await window.invoke("db:getFolder", id)
     if (!folder.status) throw "Could not acquire created folder"
     if (folder.value) this.folders.set(id, folder.value)
@@ -234,7 +242,7 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async folderSaved(id: number) {
+  private async folderSaved(id: number) {
     const folder = await window.invoke("db:getFolder", id)
     if (!folder.status) return
     if (folder.value) this.folders.set(id, folder.value)
@@ -243,7 +251,7 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async folderMoved(id: number) {
+  private async folderMoved(id: number) {
     const folder = await window.invoke("db:getFolder", id)
     if (!folder.status) throw "Folder not found, could not update structure"
     if (folder.value) this.folders.set(id, folder.value)
@@ -251,7 +259,7 @@ export class WorkspaceStructure {
     this.recalculate = true
   }
 
-  async folderDeleted(id: number) {
+  private async folderDeleted(id: number) {
     this.folders.delete(id)
     this.folders.forEach(item => {
       if (item.folder == id) item.folder = null
@@ -261,4 +269,38 @@ export class WorkspaceStructure {
     })
     this.recalculate = true
   }
+
+  getPageIDs(): number[] {
+    return Array.from(this.pages.keys())
+  }
+
+  getPageIDsSorted(): number[] {
+    return Array.from(this.pages.keys()).sort((a, b) => {
+      const names: Array<string | null> = [null, null]
+      names[0] = this.pages.get(a)?.title || null
+      names[1] = this.pages.get(b)?.title || null
+      if (names[0] !== null && names[1] !== null) {
+        if (names[0] < names[1]) return -1
+        if (names[0] > names[1]) return 1
+        return 0
+      } else {
+        if (names[0] !== null) return -1
+        if (names[1] !== null) return 1
+        return 0
+      }
+    })
+  }
+
+  getStructure(): StructureHierarchy {
+    return this.structure
+  }
+
+  getPageMap(): Map<number, Page> {
+    return this.pages
+  }
+
+  getFolderMap(): Map<number, Folder> {
+    return this.folders
+  }
+
 }
