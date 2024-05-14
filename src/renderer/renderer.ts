@@ -12,18 +12,20 @@ pubSub.subscribe("force-reload-window", () => {
   window.send("force-reload-window")
 })
 
-initGUI()
+import { IWorkspaceStructure, WorkspaceStructure } from "@src/workspace-manager/workspaceStructure"
+import { IWorkspaceManager, WorkspaceManager } from "@src/workspace-manager/workspaceManager"
+import { IStateManager, StateManager } from "@src/state-manager/stateManager"
 
-import { WorkspaceManager } from "@src/workspace-manager/workspaceManager"
-import { WorkspaceStructure } from "@src/workspace-manager/workspaceStructure"
+const workspaceStructure: IWorkspaceStructure = new WorkspaceStructure()
 
-const workspaceManager = new WorkspaceManager()
-const workspaceStructure = new WorkspaceStructure()
+const workspaceManager: IWorkspaceManager = new WorkspaceManager(workspaceStructure)
+
+const stateManager: IStateManager = new StateManager()
 
 const getters = {
-  getWorkspacePages: () => { return workspaceStructure.pages },
-  getWorkspaceFolders: () => { return workspaceStructure.folders },
-  getWorkspaceTrashPages: () => { return workspaceStructure.pages_trash },
+  getWorkspacePages: () => { return workspaceManager.getPageMap() },
+  getWorkspaceFolders: () => { return workspaceManager.getFolderMap() },
+  // getWorkspaceTrashPages: () => { return workspaceStructure.pages_trash },
 }
 
 declare global {
@@ -33,3 +35,5 @@ declare global {
 }
 
 window.getters = getters
+
+initGUI()
