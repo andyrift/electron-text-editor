@@ -38,6 +38,8 @@ export class TitleView implements NodeView {
     this.dom.appendChild(this.contentDOM)
     
     this.dom.appendChild(this.placeholder)
+
+    this.pubSub.emit("page-title-changed", node.textContent)
   }
 
   update(node: Node): boolean {
@@ -48,6 +50,7 @@ export class TitleView implements NodeView {
     else {
       this.placeholder.classList.remove("hidden")
     }
+    this.pubSub.emit("page-title-changed", node.textContent)
     return true
   }
 }
