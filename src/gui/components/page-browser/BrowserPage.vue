@@ -1,5 +1,6 @@
 <template>
   <div @mouseenter="hover = true" @mouseleave="hover = false" draggable="true" @dragstart="handleDragStart"
+    @click="emitCustomEvent"
     class="px-2 py-0.5 cursor-pointer overflow-visible  text-zinc-900 /border-b border-b-zinc-300 /border-x-2 border-x-zinc-500 hover:bg-zinc-200 text-left whitespace-pre hover:text-wrap"
     :class="false ? 'bg-zinc-200' : ''">
     <div class="flex">
@@ -29,6 +30,10 @@ const pubSub = PubSub.getInstance()
 
 const hover = ref(false);
 
+const emit = defineEmits<{
+  selectPage: [e: MouseEvent, id: number]
+}>()
+
 const props = defineProps<{
   itemid: number,
   title: string | null,
@@ -39,6 +44,11 @@ const handleDragStart = (e: DragEvent) => {
     e.stopPropagation()
     e.dataTransfer.setData('page-browser-drag-page', props.itemid.toString())
   }
+}
+
+function emitCustomEvent(e: MouseEvent) {
+  const customEvent = new CustomEvent("selectpage", { bubbles: true, detail: { pageId: props.itemid } })
+  e.target?.dispatchEvent(customEvent)
 }
 
 </script>

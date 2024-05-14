@@ -1,12 +1,14 @@
 <template>
   <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
-    <template v-for="item in browserStructure" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
-      <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
-        :name="item.name" :content="item.content">
-      </BrowserFolder>
-      <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title">
-      </BrowserPage>
-    </template>
+    <div @selectpage="handleSelect">
+      <template v-for="item in browserStructure" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
+        <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
+          :name="item.name" :content="item.content">
+        </BrowserFolder>
+        <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title">
+        </BrowserPage>
+      </template>
+    </div>
     <button @click="() => { pubSub.emit('browser-create-page') }"
       class="px-2 py-0.5 mt-1 w-1/2 overflow-x-hidden text-zinc-500 hover:bg-zinc-200 text-left font-medium outline-none">
       <i class="fa-solid fa-plus mr-2"></i>
@@ -77,6 +79,10 @@ const handleDrop = (e: DragEvent) => {
       if (folderid) pubSub.emit("change-folder-folder", folderid, null)
     }
   }
+}
+
+function handleSelect(e: MouseEvent) {
+  console.log("select", e.detail)
 }
 
 </script>
