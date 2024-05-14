@@ -4,7 +4,7 @@ import { Editor } from "./editor";
 import type { Ref } from "vue";
 import { onMounted } from "vue";
 
-export function useEditor(element: Ref<Element | null>): Editor {
+export function useEditor(element: Ref<HTMLElement | null>): Editor {
   const pubSub = PubSub.getInstance()
   const editor = Editor.getInstance()
   

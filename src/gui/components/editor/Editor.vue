@@ -1,6 +1,9 @@
 <template>
-  <div ref="relative" class="max-w-3xl mx-auto relative" @contextmenu="handleContextMenu">
-    <div ref="editorElement" class="border p-4 relative"></div>
+  <div ref="relative" class="max-w-3xl h-full mx-auto relative" @contextmenu="handleContextMenu">
+    <div class="p-4">
+      <div ref="editorElement"></div>
+      <div class="h-64s cursor-text"></div>
+    </div>
   </div>
   <Menu :menuState="editor.menuState"></Menu>
 </template>
@@ -13,7 +16,7 @@ import Menu from "./menu/Menu.vue";
 
 import { ref } from "vue"
 
-const editorElement = ref<Element | null>(null)
+const editorElement = ref<HTMLElement | null>(null)
 const editor = useEditor(editorElement)
 
 const pubSub = PubSub.getInstance()

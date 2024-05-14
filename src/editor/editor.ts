@@ -88,7 +88,7 @@ export class Editor {
     return EditorState.create(config)
   };
 
-  createView(element: Element): EditorView {
+  createView(element: HTMLElement): EditorView {
     const cmd = this.commands
 
     const props: DirectEditorProps = {
