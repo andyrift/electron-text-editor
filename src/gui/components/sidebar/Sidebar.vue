@@ -17,7 +17,7 @@
           <i v-else class="fa-solid fa-chevron-right mr-2"></i>
           <span>Page Browser</span>
         </div>
-        <div v-show="showContainers.pageBrowser" class="sidebar grow w-full overflow-y-auto bg-zinc-100">
+        <div v-show="showContainers.pageBrowser" class="sidebar flex-1 grow w-full overflow-y-auto bg-zinc-100">
           <PageBrowser />
         </div>
         <div class="border-t border-zinc-300">
@@ -29,7 +29,7 @@
             <span>Trash can</span>
           </div>
         </div>
-        <div v-show="showContainers.trashBrowser" class="sidebar grow w-full overflow-y-auto bg-zinc-100">
+        <div v-show="showContainers.trashBrowser" class="sidebar flex-1 grow w-full overflow-y-auto bg-zinc-100">
           <TrashBrowser />
         </div>
       </div>
