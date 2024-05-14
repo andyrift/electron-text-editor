@@ -25,7 +25,7 @@ export class TitleView implements NodeView {
     this.contentDOM = document.createElement("div")
     this.placeholder = document.createElement("div")
 
-    this.dom.classList.add(..."mt-1 mb-3 text-4xl font-bold block relative".split(' '))
+    this.dom.classList.add(..."mt-1 mb-3 text-4xl text-zinc-800 font-bold block relative".split(' '))
 
     this.placeholder.classList.add(..."opacity-30 absolute left-0 top-0 select-none pointer-events-none".split(' '))
     this.placeholder.contentEditable = "false"

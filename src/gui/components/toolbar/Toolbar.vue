@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-8 bg-white flex items-center px-3 flex-none whitespace-nowrap">
     <div class="grow flex-1">
-      <div v-show="last_saved.length" class="text-zinc-400 mx-4 text-xs">{{ "Last Saved: " + last_saved }}</div>
+      <div v-show="last_saved.length" class="text-zinc-400 px-2 text-xs">{{ "Last Saved: " + last_saved }}</div>
     </div>
     <div>{{ title || "Untitled" }}</div>
     <div class="grow flex-1 flex">
@@ -10,7 +10,6 @@
         <i class="fa-solid fa-bars px-2 py-1"></i>
       </button>
     </div>
-
     <Menu></Menu>
   </div>
 </template>
