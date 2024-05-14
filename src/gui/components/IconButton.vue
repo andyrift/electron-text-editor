@@ -16,8 +16,13 @@ const props = withDefaults(defineProps<{
   stopProp: true,
 })
 
+const emit = defineEmits<{
+  clickbutton: [e: MouseEvent]
+}>()
+
 const handleClick = (e: MouseEvent) => {
   if (props.stopProp) e.stopPropagation()
   if (props.newOnClick) props.newOnClick(e)
+  emit("clickbutton", e)
 }
 </script>
