@@ -5,7 +5,7 @@
       <div class="h-64 cursor-text" @click="handleClickUnderEditor"></div>
     </div>
   </div>
-  <Menu :menuState="editor.menuState"></Menu>
+  <Menu :menuState="editor.getMenuState()"></Menu>
 </template>
 
 <script setup lang="ts">

@@ -10,7 +10,7 @@ export function useEditor(element: Ref<HTMLElement | null>): Editor {
   
   onMounted(() => {
     if (element.value) {
-      editor.view = editor.createView(element.value)
+      editor.setView(editor.createView(element.value))
       pubSub.emit("use-editor")
     }
     else throw new Error("No Editor Element Provided")

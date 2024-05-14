@@ -32,12 +32,12 @@ import { CheckView, TableView, TitleView } from "./node-views"
 import { DocumentJson, EditorStateJson } from "@src/database/model"
 
 export class Editor {
-  plugins: Plugin[]
-  schema: Schema
-  commands: Commands
-  view: EditorView | null = null
+  private plugins: Plugin[]
+  private schema: Schema
+  private commands: Commands
+  private view: EditorView | null = null
 
-  menuState: MenuState
+  private menuState: MenuState
 
   private static _instance: Editor
 
@@ -47,7 +47,7 @@ export class Editor {
     return this._instance
   };
 
-  private constructor() {
+  constructor() {
 
     if (Editor._instance) throw "Can not create more editors"
 
@@ -77,7 +77,7 @@ export class Editor {
 
     document.execCommand('enableObjectResizing', false, 'false')
     document.execCommand('enableInlineTableEditing', false, 'false')
-  };
+  }
 
   createState(doc: Node | null): EditorState {
     const config: EditorStateConfig = {
@@ -86,7 +86,7 @@ export class Editor {
     }
     if (doc) config.doc = doc
     return EditorState.create(config)
-  };
+  }
 
   createView(element: HTMLElement): EditorView {
     const cmd = this.commands
@@ -102,23 +102,30 @@ export class Editor {
     }
 
     return new EditorView(element, props)
-  };
+  }
+
+  setView(view: EditorView) {
+    this.view = view
+    this.view.setProps({
+      editable: () => false
+    })
+  }
 
   getTitle(): string | null {
-    if (!this.view) return null;
-    let maybeTitle = this.view.state.doc.firstChild;
+    if (!this.view) return null
+    let maybeTitle = this.view.state.doc.firstChild
     if (maybeTitle && maybeTitle.type.name == "title") {
-      return maybeTitle.textContent || null;
+      return maybeTitle.textContent || null
     }
-    return null;
-  };
+    return null
+  }
 
   putPage(document: DocumentJson, editor_state: EditorStateJson): void {
-    if (!this.view) return;
+    if (!this.view) return
 
-    this.view.state = this.createState(this.schema.nodeFromJSON(document));
-    this.view.dispatch(this.view.state.tr);
-  };
+    this.view.state = this.createState(this.schema.nodeFromJSON(document))
+    this.view.dispatch(this.view.state.tr)
+  }
 
   getPageData(): { document: DocumentJson, editor_state: EditorStateJson } | null {
     if (!this.view) return null
@@ -135,6 +142,22 @@ export class Editor {
       document: state.doc,
       editor_state: {},
     }
+  }
+
+  setEditable(value: boolean): boolean {
+    if (!this.view) return false
+    this.view.setProps({
+      editable: () => value
+    })
+    return true
+  }
+
+  getMenuState() {
+    return this.menuState
+  }
+
+  hasView() {
+    return this.view !== null
   }
 
 }
