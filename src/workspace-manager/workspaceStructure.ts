@@ -161,6 +161,28 @@ export class WorkspaceStructure {
         content: this.calculateContent(folder.id) 
       })
     })
+    str.sort((a, b) => {
+      const names: Array<string | null> = [null, null]
+      if ("content" in a) {
+        names[0] = this.folders.get(a.id)?.name || null
+      } else {
+        names[0] = this.pages.get(a.id)?.title || null
+      }
+      if ("content" in b) {
+        names[1] = this.folders.get(b.id)?.name || null
+      } else {
+        names[1] = this.pages.get(b.id)?.title || null
+      }
+      if (names[0] !== null && names[1] !== null) {
+        if (names[0] < names[1]) return -1
+        if (names[0] > names[1]) return 1
+        return 0
+      } else {
+        if (names[0] !== null) return -1
+        if (names[1] !== null) return 1
+        return 0
+      }
+    })
     return str
   }
 
@@ -175,6 +197,7 @@ export class WorkspaceStructure {
     if (page.value) this.pages.set(id, page.value)
     else this.pages.delete(id)
     this.pubSub.emit("workspace-pages-changed")
+    this.recalculate = true
   }
 
   async pageMoved(id: number) {
@@ -217,6 +240,7 @@ export class WorkspaceStructure {
     if (folder.value) this.folders.set(id, folder.value)
     else this.folders.delete(id)
     this.pubSub.emit("workspace-folders-changed")
+    this.recalculate = true
   }
 
   async folderMoved(id: number) {
