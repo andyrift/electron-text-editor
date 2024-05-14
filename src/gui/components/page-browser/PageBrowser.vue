@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
-    <div @selectpage="handleSelect">
+    <div @selectpage.stop="handleSelectPage" @deletepage.stop="handleDeletePage">
       <template v-for="item in browserStructure" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
         <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
           :name="item.name" :content="item.content">
@@ -9,13 +9,13 @@
         </BrowserPage>
       </template>
     </div>
-    <button @click="() => { pubSub.emit('browser-create-page') }"
+    <button @click="handleCreatePage"
       class="px-2 py-0.5 mt-1 w-1/2 overflow-x-hidden text-zinc-500 hover:bg-zinc-200 text-left font-medium outline-none">
       <i class="fa-solid fa-plus mr-2"></i>
       <i class="fa-solid fa-file-lines mr-2"></i>
       <span>{{ "New page" }}</span>
     </button>
-    <button @click="() => { pubSub.emit('browser-create-folder') }"
+    <button @click="handleCreateFolder"
       class="px-2 py-0.5 mt-1 w-1/2 overflow-x-hidden text-zinc-500 hover:bg-zinc-200 text-left font-medium outline-none">
       <i class="fa-solid fa-plus mr-2"></i>
       <i class="fa-solid fa-folder mr-2"></i>
@@ -63,11 +63,11 @@ pubSub.subscribe("workspace-folders-changed", (id: number) => {
 pubSub.subscribe("workspace-structure-init-end", acceptStructure)
 pubSub.subscribe("workspace-structure-changed", acceptStructure)
 
-
-const handleDragover = (e: DragEvent) => {
+function handleDragover(e: DragEvent) {
   e.preventDefault()
 }
-const handleDrop = (e: DragEvent) => {
+
+function handleDrop(e: DragEvent) {
   e.stopPropagation()
   if (e.dataTransfer) {
     if (e.dataTransfer.getData('page-browser-drag-page')) {
@@ -81,8 +81,22 @@ const handleDrop = (e: DragEvent) => {
   }
 }
 
-function handleSelect(e: MouseEvent) {
-  console.log("select", e.detail)
+function handleSelectPage(e: CustomEvent) {
+  const id: number = parseInt(e.detail["pageID"])
+  console.log("select", id)
+}
+
+function handleDeletePage(e: CustomEvent) {
+  const id: number = parseInt(e.detail["pageID"])
+  console.log("delete", id)
+}
+
+function handleCreatePage(e: MouseEvent) {
+  pubSub.emit('browser-create-page')
+}
+
+function handleCreateFolder(e: MouseEvent) {
+  pubSub.emit('browser-create-folder')
 }
 
 </script>
