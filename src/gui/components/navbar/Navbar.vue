@@ -7,18 +7,12 @@
     </div>
     <div class="grow navbar-draggable"></div>
     <!-- <div v-show="last_saved.length" class="text-zinc-400 mx-4 text-xs">{{ "Last Saved: " + last_saved }}</div> -->
-    <button class="hover:bg-zinc-200 rounded outline-none mr-1" @click="pubSub.emit('toggle-navbar-menu', true)">
-      <i class="fa-solid fa-ellipsis p-2"></i>
-    </button>
-    <div class="pr-[calc(138px)]"></div>
-    <Menu></Menu>
   </div>
 </template>
 
 <script setup lang="ts">
 
 import SidebarToggle from "./SidebarToggle.vue"
-import Menu from "./Menu.vue"
 
 import { ref } from 'vue'
 import { PubSub } from "@src/pubSub"

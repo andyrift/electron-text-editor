@@ -1,6 +1,6 @@
 <template>
   <div ref="relative" class="max-w-3xl mx-auto relative" @contextmenu="handleContextMenu">
-    <div ref="editorElement" class="border my-3 p-4 relative"></div>
+    <div ref="editorElement" class="border p-4 relative"></div>
   </div>
   <Menu :menuState="editor.menuState"></Menu>
 </template>
