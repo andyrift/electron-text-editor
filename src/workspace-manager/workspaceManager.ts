@@ -1,14 +1,29 @@
 import { Folder, Page } from "@src/database/model"
 import { PubSub } from "@src/pubSub"
 
-export class WorkspaceManager {
+import type { IWorkspaceStructure, StructureHierarchy } from "./workspaceStructure"
+
+export interface IWorkspaceManager {
+  getPageMap(): Map<number, Page>
+  getFolderMap(): Map<number, Folder>
+  getPageIDs(): number[]
+  getPageIDsSorted(): number[]
+  getStructure(): StructureHierarchy
+}
+
+export class WorkspaceManager implements IWorkspaceManager {
 
   pubSub = PubSub.getInstance()
 
   queue: (() => Promise<void> | void)[] = []
   executing = false
 
-  constructor() {
+  workspaceStructure: IWorkspaceStructure
+
+  constructor(workspaceStructure: IWorkspaceStructure) {
+
+    this.workspaceStructure = workspaceStructure
+
     this.pubSub.subscribe("change-page-folder", async (child: number, parent: number | null) => {
       const res = await window.invoke("db:changePageFolder", child, parent)
       if (res.status) this.pubSub.emit("page-moved", child)
@@ -55,4 +70,25 @@ export class WorkspaceManager {
     }
     this.executing = false
   }
+
+  getPageIDs(): number[] {
+    return this.workspaceStructure.getPageIDs()
+  }
+
+  getPageIDsSorted(): number[] {
+    return this.workspaceStructure.getPageIDsSorted()
+  }
+
+  getStructure(): StructureHierarchy {
+    return this.workspaceStructure.getStructure()
+  }
+
+  getPageMap(): Map<number, Page> {
+    return this.workspaceStructure.getPageMap()
+  }
+
+  getFolderMap(): Map<number, Folder> {
+    return this.workspaceStructure.getFolderMap()
+  }
+
 }
