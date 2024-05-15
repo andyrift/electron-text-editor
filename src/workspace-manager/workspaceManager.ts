@@ -96,6 +96,21 @@ export class WorkspaceManager implements IWorkspaceManager {
       this.createAndOpenPage()
     })
 
+    this.pubSub.subscribe("browser-delete-page", async (id: number) => {
+      const page = this.getPageMap().get(id)
+      if (!page) return
+      if (id == this.getCurrentPageId()) {
+        await this.stateManager.saveCurrentPage()
+        if (this.getPageIDs().length > 0) {
+          if (!await this.stateManager.switchToPage(this.getPageIDs().find(a => a != id)!))
+            return
+        } else {
+          await this.createAndOpenPage()
+        }
+      }
+      this.trashPage(id)
+    })
+
     this.pubSub.subscribe("browser-open-page", (id: number) => {
       this.stateManager.switchToPage(id)
     })
@@ -112,6 +127,13 @@ export class WorkspaceManager implements IWorkspaceManager {
       this.stateManager.switchToPage(id)
     }
   }
+
+  private async trashPage(id: number) {
+    const res = await window.invoke("db:trashPage", id)
+    if (res.status) this.pubSub.emit("page-trashed", id)
+    else console.error(res.value)
+  }
+
 
   addToQueue(foo: typeof this.queue[number]) {
     this.queue.unshift(foo)
