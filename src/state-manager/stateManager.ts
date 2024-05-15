@@ -3,7 +3,7 @@ import { Editor } from "@src/editor";
 import { PubSub } from "@src/pubSub";
 
 export interface IStateManager {
-  switchToPage(id: number): boolean
+  switchToPage(id: number): Promise<boolean>
   getCurrent(): number | null
   start(): Promise<void>
   createAndSavePage(): Promise<number | null>
@@ -69,10 +69,18 @@ export class StateManager implements IStateManager {
     return pageData
   }
 
-  switchToPage(id: number): boolean {
+  async switchToPage(id: number): Promise<boolean> {
     if (this.current === null) {
+      this.pubSub.emit("current-page-changed", id)
       this.current = id
       return true
+    } else {
+      await this.saveCurrentPage()
+      if (await this.openPageInEditor(id)) {
+        this.pubSub.emit("current-page-changed", id)
+        this.current = id
+        return true
+      }
     }
     return false
   }
@@ -97,7 +105,8 @@ export class StateManager implements IStateManager {
       const pageData = this.editor.getPageData()
       if (pageData === null) return false
       const res = await window.invoke("db:savePage", this.current, title, pageData.document, pageData.editor_state)
-      if (!res.status) console.error(res.value)
+      if (res.status) this.pubSub.emit("page-saved", this.current)
+      else console.error(res.value)
       return res.status
     }
     return false

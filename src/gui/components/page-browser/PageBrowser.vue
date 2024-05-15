@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
     <div @selectpage.stop="handleSelectPage" @deletepage.stop="handleDeletePage">
-      <template v-for="item in browserStructure" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
-        <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
+      <template v-for="item in browserStructure" :key="(item.type == 'folder' ? 'f' : 'p') + item.id">
+        <BrowserFolder v-if="item.type == 'folder'" :itemid="item.id" :open="item.open"
           :name="item.name" :content="item.content">
         </BrowserFolder>
-        <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title">
+        <BrowserPage v-else-if="item.type == 'page'" :itemid="item.id" :title="item.title">
         </BrowserPage>
       </template>
     </div>
@@ -39,6 +39,7 @@ import type { StructureHierarchy } from "@src/workspace-manager/workspaceStructu
 
 const browserStructure = ref<BrowserHierarchy>([])
 const folderOpen = ref<FolderOpen>({})
+const currentPage = ref<number | null>(null)
 
 import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure } from "./pageBrowser"
 
@@ -61,7 +62,6 @@ pubSub.subscribe("workspace-folders-changed", (id: number) => {
 })
 
 import { WorkspaceManager } from '@src/workspace-manager/workspaceManager'
-
 
 pubSub.subscribe("workspace-structure-init-end", () => {
   acceptStructure(WorkspaceManager.getInstance().getStructure())
@@ -88,12 +88,12 @@ function handleDrop(e: DragEvent) {
 
 function handleSelectPage(e: CustomEvent) {
   const id: number = parseInt(e.detail["pageID"])
-  console.log("select", id)
+  pubSub.emit('browser-open-page', id)
 }
 
 function handleDeletePage(e: CustomEvent) {
   const id: number = parseInt(e.detail["pageID"])
-  console.log("delete", id)
+  pubSub.emit('browser-delete-page', id)
 }
 
 function handleCreatePage(e: MouseEvent) {
@@ -103,5 +103,22 @@ function handleCreatePage(e: MouseEvent) {
 function handleCreateFolder(e: MouseEvent) {
   pubSub.emit('browser-create-folder')
 }
+
+pubSub.subscribe("current-page-changed", (id: number) => {
+  currentPage.value = id
+  const pages = WorkspaceManager.getInstance().getPageMap()
+  const folders = WorkspaceManager.getInstance().getFolderMap()
+  const page = pages.get(id)
+  if (!page) return
+  let current: number | null = page.folder
+  while (current !== null) {
+    console.log("check", current)
+    folderOpen.value[current] = true
+    updateOpenInStructure(browserStructure.value, current, true)
+    const folder = folders.get(current)
+    if (!folder) break
+    current = folder.folder
+  }
+})
 
 </script>

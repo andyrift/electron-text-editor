@@ -75,7 +75,7 @@ const open = ref(props.open);
 const input = ref<string | null>(props.name)
 const inputElement = ref<HTMLElement | null>(null)
 
-const toggleOpen = async () => {
+const toggleOpen = () => {
   open.value = !open.value
   pubSub.emit("folder-open-changed", props.itemid, open.value)
 }

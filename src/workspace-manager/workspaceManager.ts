@@ -84,23 +84,33 @@ export class WorkspaceManager implements IWorkspaceManager {
     if (ids.length > 0) {
       this.stateManager.switchToPage(ids[0]!)
     } else {
-      const id = await this.stateManager.createAndSavePage()
-      if (id === null) {
-        throw "Could not create and open page"
-      } else {
-        this.pubSub.emit("page-created", id)
-        this.stateManager.switchToPage(id)
-      }
+      await this.createAndOpenPage()
     }
     await this.stateManager.start()
 
     this.pubSub.subscribe("save-current-page", async () => {
-      if (await this.stateManager.saveCurrentPage()) {
-        this.pubSub.emit("page-saved", this.stateManager.getCurrent())
-      }
+      await this.stateManager.saveCurrentPage()
+    })
+
+    this.pubSub.subscribe("browser-create-page", () => {
+      this.createAndOpenPage()
+    })
+
+    this.pubSub.subscribe("browser-open-page", (id: number) => {
+      this.stateManager.switchToPage(id)
     })
     
     this.pubSub.emit("workspace-manager-init-end")
+  }
+
+  private async createAndOpenPage() {
+    const id = await this.stateManager.createAndSavePage()
+    if (id === null) {
+      throw "Could not create and open page"
+    } else {
+      this.pubSub.emit("page-created", id)
+      this.stateManager.switchToPage(id)
+    }
   }
 
   addToQueue(foo: typeof this.queue[number]) {
