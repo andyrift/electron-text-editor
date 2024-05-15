@@ -60,7 +60,12 @@ pubSub.subscribe("workspace-folders-changed", (id: number) => {
   updateNameInStructure(browserStructure.value, id, folder.name)
 })
 
-// pubSub.subscribe("workspace-structure-init-end", acceptStructure)
+import { WorkspaceManager } from '@src/workspace-manager/workspaceManager'
+
+
+pubSub.subscribe("workspace-structure-init-end", () => {
+  acceptStructure(WorkspaceManager.getInstance().getStructure())
+})
 pubSub.subscribe("workspace-structure-changed", acceptStructure)
 
 function handleDragover(e: DragEvent) {
