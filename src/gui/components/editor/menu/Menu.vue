@@ -72,8 +72,4 @@ pubSub.subscribe('toggle-editor-context-menu', (value: boolean, e?: MouseEvent) 
   else if (value) showMenu({ pageX: 0, pageY: 0 })
   else hideMenu()
 })
-
-document.body.addEventListener('click', () => {
-  pubSub.emit('toggle-editor-context-menu', false)
-})
 </script>

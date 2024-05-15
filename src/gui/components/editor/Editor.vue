@@ -1,5 +1,6 @@
 <template>
-  <div ref="relative" class="max-w-3xl h-full mx-auto relative" @contextmenu="handleContextMenu">
+  <div @click="pubSub.emit('toggle-editor-context-menu', false)" ref="relative"
+    class="max-w-3xl h-full mx-auto relative" @contextmenu="handleContextMenu">
     <div class="p-4 mt-8">
       <div ref="editorElement"></div>
       <div class="h-64 cursor-text" @click="handleClickUnderEditor"></div>
