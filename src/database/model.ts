@@ -36,7 +36,7 @@ export interface DBModelMethods {
   all(query: string): DBPromise<any[]>
 
   createPage(document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ id: number }>
-  savePage(title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ saved: number }>
+  savePage(id: number, title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ last_saved: number }>
 
   getAllPagesNotDel(): DBPromise<Page[]>
   getAllPagesDel(): DBPromise<Page[]>
@@ -125,25 +125,25 @@ export class DBModel implements DBModelMethods {
     }
   }
 
-  async savePage(title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ saved: number }> {
+  async savePage(id: number, title: string | null, document: DocumentJson, editor_state: EditorStateJson): DBPromise<{ last_saved: number }> {
     
     const update_page = this.db.prepare(
-      "update pages set title = :title, saved = unixepoch() where id = :id returning saved"
+      "update pages set title = :title, last_saved = unixepoch() where id = :id returning last_saved"
     )
     const update_page_data = this.db.prepare(
-      "update page_data set document = :document, editor_state = :editor_state"
+      "update page_data set document = :document, editor_state = :editor_state where id = :id"
     )
 
-    const tr = this.db.transaction(async (title: string | null, document: string, editor_state: string) => {
-      const res = await update_page.get({ title }) as { saved: number }
-      await update_page_data.run({ document, editor_state })
+    const tr = this.db.transaction(async (id: number, title: string | null, document: string, editor_state: string) => {
+      const res = await update_page.get({ id, title }) as { last_saved: number }
+      await update_page_data.run({ id, document, editor_state })
       return res
     })
 
     try {
       return {
         status: true,
-        value: await tr(title, JSON.stringify(document), JSON.stringify(editor_state))
+        value: await tr(id, title, JSON.stringify(document), JSON.stringify(editor_state))
       }
     } catch (err: any) {
       return { status: false, value: err.toString() }
