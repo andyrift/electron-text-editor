@@ -1,11 +1,12 @@
 <template>
   <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
     <div @selectpage.stop="handleSelectPage" @deletepage.stop="handleDeletePage">
-      <template v-for="item in browserStructure" :key="(item.type == 'folder' ? 'f' : 'p') + item.id">
-        <BrowserFolder v-if="item.type == 'folder'" :itemid="item.id" :open="item.open"
-          :name="item.name" :content="item.content">
+      <template v-for="item in browserStructure" :key="item.key">
+        <BrowserFolder v-if="item.type == 'folder'" key="folders" :itemid="item.id" :open="item.open"
+          :name="item.name" :content="item.content" :currentPage="currentPage">
         </BrowserFolder>
-        <BrowserPage v-else-if="item.type == 'page'" :itemid="item.id" :title="item.title">
+        <BrowserPage v-else-if="item.type == 'page'" key="pages" :itemid="item.id" :title="item.title"
+          :currentPage="currentPage">
         </BrowserPage>
       </template>
     </div>
@@ -41,7 +42,7 @@ const browserStructure = ref<BrowserHierarchy>([])
 const folderOpen = ref<FolderOpen>({})
 const currentPage = ref<number | null>(null)
 
-import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure } from "./pageBrowser"
+import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure, updateOpensInStructure } from "./pageBrowser"
 
 function acceptStructure(structure: StructureHierarchy) {
   const folders = window.getters.getWorkspaceFolders()
@@ -114,11 +115,11 @@ pubSub.subscribe("current-page-changed", (id: number) => {
   while (current !== null) {
     console.log("check", current)
     folderOpen.value[current] = true
-    updateOpenInStructure(browserStructure.value, current, true)
     const folder = folders.get(current)
     if (!folder) break
     current = folder.folder
   }
+  updateOpensInStructure(browserStructure.value, folderOpen.value)
 })
 
 </script>

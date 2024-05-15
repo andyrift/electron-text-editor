@@ -33,14 +33,12 @@
       :class="content.length == 0 ? 'text-zinc-700 text-opacity-50' : ''">
       <template v-for="item in content" :key="item.type == 'folder' ? 'f' : 'p' + item.id">
         <BrowserFolder v-if="item.type == 'folder'" :key="'f' + item.id" :itemid="item.id" :open="item.open"
-          :name="item.name" :content="item.content">
+          :name="item.name" :content="item.content" :currentPage="currentPage">
         </BrowserFolder>
-        <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title">
+        <BrowserPage v-else-if="item.type == 'page'" :key="'p' + item.id" :itemid="item.id" :title="item.title"
+          :currentPage="currentPage">
         </BrowserPage>
       </template>
-      <!-- <div v-if="content.length == 0" class="py-1 pl-2">
-        Empty
-      </div> -->
     </div>
   </div>
 </template>
@@ -64,20 +62,18 @@ import { BrowserHierarchy } from './pageBrowser';
 
 
 const props = defineProps<{
-  itemid: number,
+  itemid: number
   name: string | null
   open: boolean
   content: BrowserHierarchy
+  currentPage: number | null
 }>();
-
-const open = ref(props.open);
 
 const input = ref<string | null>(props.name)
 const inputElement = ref<HTMLElement | null>(null)
 
 const toggleOpen = () => {
-  open.value = !open.value
-  pubSub.emit("folder-open-changed", props.itemid, open.value)
+  pubSub.emit("folder-open-changed", props.itemid, !props.open)
 }
 
 const toggleRename = async () => {
@@ -113,13 +109,13 @@ const handleDrop = async (e: DragEvent) => {
   e.stopPropagation()
   if (e.dataTransfer) {
     if (e.dataTransfer.getData('page-browser-drag-page')) {
-      if (!open.value) toggleOpen()
+      if (!props.open) toggleOpen()
       await nextTick()
       let pageid = parseInt(e.dataTransfer.getData('page-browser-drag-page'))
       if (pageid) pubSub.emit("change-page-folder", pageid, props.itemid)
     }
     if (e.dataTransfer.getData('page-browser-drag-folder')) {
-      if (!open.value) toggleOpen()
+      if (!props.open) toggleOpen()
       await nextTick()
       let folderid = parseInt(e.dataTransfer.getData('page-browser-drag-folder'))
       if (folderid) pubSub.emit("change-folder-folder", folderid, props.itemid)

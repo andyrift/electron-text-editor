@@ -1,11 +1,13 @@
 export type Page = {
   type: "page"
+  key: string
   id: number
   title: string | null
 }
 
 export type Folder = {
   type: "folder"
+  key: string
   id: number
   open: boolean
   content: Array<Page | Folder>
@@ -32,6 +34,7 @@ export function constructContent(
       open = folderOpen[item.id] || false
       str.push({
         type: "folder",
+        key: "f" + item.id,
         open,
         id: item.id,
         name: folder.name,
@@ -42,6 +45,7 @@ export function constructContent(
       if (!page) throw "Workspage structure not synchronized. Page exists in structure but not in map"
       str.push({
         type: "page",
+        key: "p" + item.id,
         id: page.id,
         title: page.title
       })
@@ -66,6 +70,17 @@ export function updateOpenInStructure(structure: BrowserHierarchy, id: number, o
     if ("content" in item) {
       if (item.id == id) item.open = open
       else updateOpenInStructure(item.content, id, open)
+    }
+  })
+}
+
+export function updateOpensInStructure(structure: BrowserHierarchy, open: FolderOpen) {
+  structure.forEach(item => {
+    if ("content" in item) {
+      const value = open[item.id]
+      if (value !== undefined)
+        item.open = value
+      updateOpensInStructure(item.content, open)
     }
   })
 }
