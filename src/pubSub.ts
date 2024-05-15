@@ -8,19 +8,20 @@ export class PubSub {
     return this._instance
   }
 
-  channels: { [id: string] : Array<Function> } = {}
+  private _channels: { [id: string] : Array<Function> } = {}
 
   emit(event: string, ...args: any[]) {
-    if (this.channels[event]) {
-      this.channels[event].forEach(callback => {
+    if (this._channels[event]) {
+      // console.log("event:", event, "listeners:", this._channels[event].length)
+      this._channels[event].forEach(callback => {
         callback(...args)
       })
     }
   }
 
   subscribe(event: string, callback: Function) {
-    if (!this.channels[event]) this.channels[event] = []
-    this.channels[event].push(callback)
+    if (!this._channels[event]) this._channels[event] = []
+    this._channels[event].push(callback)
   }
 
   static subscribe(event: string, callback: Function) {
