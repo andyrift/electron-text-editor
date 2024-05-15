@@ -18,6 +18,7 @@ export interface IWorkspaceStructure {
   getPageIDs(): number[]
   getPageIDsSorted(): number[]
   getStructure(): StructureHierarchy
+  start(): Promise<void>
 }
 
 export class WorkspaceStructure implements IWorkspaceStructure {
@@ -35,7 +36,11 @@ export class WorkspaceStructure implements IWorkspaceStructure {
   recalculate = false
 
   constructor() {
-    this.addToQueue(this.init)
+    this.pubSub.subscribe("page-created", (id: number) => {
+      this.addToQueue(async () => {
+        await this.pageCreated(id)
+      })
+    })
 
     this.pubSub.subscribe("page-saved", (id: number) => {
       this.addToQueue(async () => {
@@ -114,7 +119,12 @@ export class WorkspaceStructure implements IWorkspaceStructure {
 
     this.recalculateStructure(false)
 
-    this.pubSub.emit("workspace-structure-init-end", this.structure)
+    this.pubSub.emit("workspace-structure-init-end")
+  }
+
+  async start() {
+    this.addToQueue(this.init)
+    await new Promise((resolve, reject) => { this.pubSub.subscribe("workspace-structure-init-end", resolve) })
   }
 
   private async update() {
@@ -199,11 +209,18 @@ export class WorkspaceStructure implements IWorkspaceStructure {
     if(emit) this.pubSub.emit("workspace-structure-changed", this.structure)
   }
 
+  private async pageCreated(id: number) {
+    const res = await window.invoke("db:getPage", id)
+    if (!res.status) throw "Could not acquire created page"
+    if (!res.value) throw "Could not acquire created page"
+    this.pages.set(id, res.value)
+    this.recalculate = true
+  }
+
   private async pageSaved(id: number) {
     const page = await window.invoke("db:getPage", id)
     if (!page.status) return
-    if (page.value) this.pages.set(id, page.value)
-    else this.pages.delete(id)
+    this.pages.set(id, page.value)
     this.pubSub.emit("workspace-pages-changed")
     this.recalculate = true
   }

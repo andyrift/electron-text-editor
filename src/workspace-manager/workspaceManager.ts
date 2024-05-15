@@ -1,7 +1,8 @@
 import { Folder, Page } from "@src/database/model"
 import { PubSub } from "@src/pubSub"
 
-import type { IWorkspaceStructure, StructureHierarchy } from "./workspaceStructure"
+import { WorkspaceStructure, type IWorkspaceStructure, type StructureHierarchy } from "./workspaceStructure"
+import { IStateManager, StateManager } from "@src/state-manager/stateManager"
 
 export interface IWorkspaceManager {
   getPageMap(): Map<number, Page>
@@ -9,6 +10,7 @@ export interface IWorkspaceManager {
   getPageIDs(): number[]
   getPageIDsSorted(): number[]
   getStructure(): StructureHierarchy
+  getCurrentPageId(): number | null
 }
 
 export class WorkspaceManager implements IWorkspaceManager {
@@ -20,9 +22,23 @@ export class WorkspaceManager implements IWorkspaceManager {
 
   workspaceStructure: IWorkspaceStructure
 
-  constructor(workspaceStructure: IWorkspaceStructure) {
+  stateManager: IStateManager
 
+  private static _instance: IWorkspaceManager
+
+  static getInstance(): IWorkspaceManager {
+    if (this._instance) return this._instance
+    this._instance = new this()
+    return this._instance
+  };
+
+  private constructor() {
+
+    const workspaceStructure: IWorkspaceStructure = new WorkspaceStructure()
     this.workspaceStructure = workspaceStructure
+
+    const stateManager: IStateManager = new StateManager()
+    this.stateManager = stateManager
 
     this.pubSub.subscribe("change-page-folder", async (child: number, parent: number | null) => {
       const res = await window.invoke("db:changePageFolder", child, parent)
@@ -53,7 +69,38 @@ export class WorkspaceManager implements IWorkspaceManager {
   }
 
   async init() {
+    this.pubSub.subscribe("workspace-structure-init-end", () => {
+      console.log("workspace-structure-init-end")
+    })
+    this.pubSub.subscribe("state-manager-init-end", () => {
+      console.log("state-manager-init-end")
+    })
+    this.pubSub.subscribe("workspace-manager-init-end", () => {
+      console.log("workspace-manager-init-end")
+    })
 
+    await this.workspaceStructure.start()
+    const ids = this.getPageIDs()
+    if (ids.length > 0) {
+      this.stateManager.switchToPage(ids[0]!)
+    } else {
+      const id = await this.stateManager.createAndSavePage()
+      if (id === null) {
+        throw "Could not create and open page"
+      } else {
+        this.pubSub.emit("page-created", id)
+        this.stateManager.switchToPage(id)
+      }
+    }
+    await this.stateManager.start()
+
+    this.pubSub.subscribe("save-current-page", async () => {
+      if (await this.stateManager.saveCurrentPage()) {
+        this.pubSub.emit("page-saved", this.stateManager.getCurrent())
+      }
+    })
+    
+    this.pubSub.emit("workspace-manager-init-end")
   }
 
   addToQueue(foo: typeof this.queue[number]) {
@@ -66,7 +113,7 @@ export class WorkspaceManager implements IWorkspaceManager {
     while (true) {
       const foo = this.queue.pop()
       if (!foo) break
-      await foo()
+      await foo.call(this)
     }
     this.executing = false
   }
@@ -89,6 +136,10 @@ export class WorkspaceManager implements IWorkspaceManager {
 
   getFolderMap(): Map<number, Folder> {
     return this.workspaceStructure.getFolderMap()
+  }
+
+  getCurrentPageId(): number | null {
+    return this.stateManager.getCurrent()
   }
 
 }

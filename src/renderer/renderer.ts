@@ -12,20 +12,13 @@ pubSub.subscribe("force-reload-window", () => {
   window.send("force-reload-window")
 })
 
-import { IWorkspaceStructure, WorkspaceStructure } from "@src/workspace-manager/workspaceStructure"
-import { IWorkspaceManager, WorkspaceManager } from "@src/workspace-manager/workspaceManager"
-import { IStateManager, StateManager } from "@src/state-manager/stateManager"
+import { WorkspaceManager } from "@src/workspace-manager/workspaceManager"
 
-const workspaceStructure: IWorkspaceStructure = new WorkspaceStructure()
-
-const workspaceManager: IWorkspaceManager = new WorkspaceManager(workspaceStructure)
-
-const stateManager: IStateManager = new StateManager()
+const workspaceManager = WorkspaceManager.getInstance()
 
 const getters = {
   getWorkspacePages: () => { return workspaceManager.getPageMap() },
   getWorkspaceFolders: () => { return workspaceManager.getFolderMap() },
-  // getWorkspaceTrashPages: () => { return workspaceStructure.pages_trash },
 }
 
 declare global {

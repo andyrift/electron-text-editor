@@ -5,10 +5,12 @@
       <div v-show="show"
         class="absolute right-1 top-4 z-20 bg-white shadow-unilg w-52 rounded-md border border-zinc-300">
         <div class="text-sm border-b-2 flex flex-col p-1">
-          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded" @click="show = false;">
+          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+            @click="pubSub.emit('save-current-page'); show = false;">
             <i class="fa-solid fa-floppy-disk mr-2"></i> Save
           </div>
-          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded" @click="show = false;">
+          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+            @click="pubSub.emit('delete-current-page'); show = false;">
             <i class="fa-solid fa-trash-can mr-2"></i> Delete
           </div>
         </div>
