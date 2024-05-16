@@ -45,8 +45,8 @@ const currentPage = ref<number | null>(null)
 import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure, updateOpensInStructure } from "./pageBrowser"
 
 function acceptStructure(structure: StructureHierarchy) {
-  const folders = window.getters.getWorkspaceFolders()
-  const pages = window.getters.getWorkspacePages()
+  const folders = WorkspaceManager.getInstance().getFolderMap()
+  const pages = WorkspaceManager.getInstance().getPageMap()
   browserStructure.value = constructContent(structure, folders, pages, folderOpen.value)
   folderOpen.value = constructOpen(browserStructure.value)
 }
