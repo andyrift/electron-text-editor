@@ -117,6 +117,10 @@ export class WorkspaceManager implements IWorkspaceManager {
     this.pubSub.subscribe("browser-open-page", (id: number) => {
       this.stateManager.switchToPage(id)
     })
+
+    this.pubSub.subscribe("pagelink-open-page", (id: number) => {
+      this.stateManager.switchToPage(id)
+    })
     
     this.pubSub.emit("workspace-manager-init-end")
   }

@@ -30,6 +30,7 @@ import { Commands } from "./commands"
 import { CheckView, PageLinkView, TableView, TitleView } from "./node-views"
 
 import { DocumentJson, EditorStateJson } from "@src/database/model"
+import { PubSub } from "@src/pubSub"
 
 export class Editor {
   private plugins: Plugin[]
@@ -38,6 +39,8 @@ export class Editor {
   private view: EditorView | null = null
 
   private menuState: MenuState
+
+  private actionPos: number | null = null
 
   private static _instance: Editor
 
@@ -77,6 +80,18 @@ export class Editor {
 
     document.execCommand('enableObjectResizing', false, 'false')
     document.execCommand('enableInlineTableEditing', false, 'false')
+
+    PubSub.subscribe("pagelink-select-page", (pos: number, id: number) => {
+      this.actionPos = pos
+      this.setEditable(false)
+    })
+
+    PubSub.subscribe("browser-select-page", (id: number) => {
+      if (this.actionPos !== null && this.view) 
+        this.commands.setPageLink(this.actionPos, id)(this.view.state, this.view.dispatch)
+      this.actionPos = null
+      this.setEditable(true)
+    })
   }
 
   createState(doc: Node | null): EditorState {

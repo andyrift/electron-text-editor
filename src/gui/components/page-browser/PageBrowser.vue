@@ -1,9 +1,10 @@
 <template>
-  <div class="min-h-full px-2 text-sm bg-white /border border-black" @drop="handleDrop" @dragover="handleDragover">
+  <div class="min-h-full px-2 text-sm bg-white" :class="selectMode ? 'border-2 border-blue-400' : ''" @drop="handleDrop"
+    @dragover="handleDragover">
     <div @selectpage.stop="handleSelectPage" @deletepage.stop="handleDeletePage">
       <template v-for="item in browserStructure" :key="item.key">
-        <BrowserFolder v-if="item.type == 'folder'" key="folders" :itemid="item.id" :open="item.open"
-          :name="item.name" :content="item.content" :currentPage="currentPage">
+        <BrowserFolder v-if="item.type == 'folder'" key="folders" :itemid="item.id" :open="item.open" :name="item.name"
+          :content="item.content" :currentPage="currentPage">
         </BrowserFolder>
         <BrowserPage v-else-if="item.type == 'page'" key="pages" :itemid="item.id" :title="item.title"
           :currentPage="currentPage">
@@ -41,6 +42,12 @@ import type { StructureHierarchy } from "@src/workspace-manager/workspaceStructu
 const browserStructure = ref<BrowserHierarchy>([])
 const folderOpen = ref<FolderOpen>({})
 const currentPage = ref<number | null>(null)
+
+const selectMode = ref(false)
+
+pubSub.subscribe("pagelink-select-page", (pos: number, id: number) => {
+  selectMode.value = true
+})
 
 import { constructContent, constructOpen, updateOpenInStructure, updateNameInStructure, updateOpensInStructure } from "./pageBrowser"
 
@@ -89,20 +96,24 @@ function handleDrop(e: DragEvent) {
 
 function handleSelectPage(e: CustomEvent) {
   const id: number = parseInt(e.detail["pageID"])
-  pubSub.emit('browser-open-page', id)
+  if (!selectMode.value) pubSub.emit('browser-open-page', id)
+  else {
+    selectMode.value = false
+    pubSub.emit('browser-select-page', id)
+  }
 }
 
 function handleDeletePage(e: CustomEvent) {
   const id: number = parseInt(e.detail["pageID"])
-  pubSub.emit('browser-delete-page', id)
+  if (!selectMode.value) pubSub.emit('browser-delete-page', id)
 }
 
 function handleCreatePage(e: MouseEvent) {
-  pubSub.emit('browser-create-page')
+  if (!selectMode.value) pubSub.emit('browser-create-page')
 }
 
 function handleCreateFolder(e: MouseEvent) {
-  pubSub.emit('browser-create-folder')
+  if (!selectMode.value) pubSub.emit('browser-create-folder')
 }
 
 pubSub.subscribe("current-page-changed", (id: number) => {
