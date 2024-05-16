@@ -95,23 +95,17 @@ export class WorkspaceManager implements IWorkspaceManager {
       await this.stateManager.saveCurrentPage()
     })
 
+    this.pubSub.subscribe("delete-current-page", () => {
+      const current = this.getCurrentPageId()
+      if (current) this.checkAndTrashPage(current)
+    })
+
     this.pubSub.subscribe("browser-create-page", () => {
       this.createAndOpenPage()
     })
 
-    this.pubSub.subscribe("browser-delete-page", async (id: number) => {
-      const page = this.getPageMap().get(id)
-      if (!page) return
-      if (id == this.getCurrentPageId()) {
-        await this.stateManager.saveCurrentPage()
-        if (this.getPageIDs().length > 1) {
-          if (!await this.stateManager.switchToPage(this.getPageIDs().find(a => a != id)!))
-            return
-        } else {
-          await this.createAndOpenPage()
-        }
-      }
-      this.trashPage(id)
+    this.pubSub.subscribe("browser-delete-page", (id: number) => {
+      this.checkAndTrashPage(id)
     })
 
     this.pubSub.subscribe("browser-open-page", (id: number) => {
@@ -133,6 +127,21 @@ export class WorkspaceManager implements IWorkspaceManager {
       this.pubSub.emit("page-created", id)
       this.stateManager.switchToPage(id)
     }
+  }
+
+  private async checkAndTrashPage(id: number) {
+    const page = this.getPageMap().get(id)
+    if (!page) return
+    if (id == this.getCurrentPageId()) {
+      await this.stateManager.saveCurrentPage()
+      if (this.getPageIDs().length > 1) {
+        if (!await this.stateManager.switchToPage(this.getPageIDs().find(a => a != id)!))
+          return
+      } else {
+        await this.createAndOpenPage()
+      }
+    }
+    this.trashPage(id)
   }
 
   private async trashPage(id: number) {
