@@ -7,10 +7,12 @@ import { IStateManager, StateManager } from "@src/state-manager/stateManager"
 export interface IWorkspaceManager {
   getPageMap(): Map<number, Page>
   getFolderMap(): Map<number, Folder>
+  getPageTrashMap(): Map<number, Page>
   getPageIDs(): number[]
   getPageIDsSorted(): number[]
   getStructure(): StructureHierarchy
   getCurrentPageId(): number | null
+  getTrashStructure(): number[]
 }
 
 export class WorkspaceManager implements IWorkspaceManager {
@@ -65,6 +67,17 @@ export class WorkspaceManager implements IWorkspaceManager {
       if (res.status) this.pubSub.emit("folder-deleted", id)
     })
 
+    this.pubSub.subscribe("trash-delete-page", async (id: number) => {
+      const res = await window.invoke("db:deletePage", id)
+      if (res.status) this.pubSub.emit("page-deleted", id)
+    })
+
+    this.pubSub.subscribe("trash-restore-page", async (id: number) => {
+      const res = await window.invoke("db:restorePage", id)
+      await this.stateManager.switchToPage(id)
+      if (res.status) this.pubSub.emit("page-restored", id)
+    })
+
     this.addToQueue(this.init)
   }
 
@@ -80,7 +93,7 @@ export class WorkspaceManager implements IWorkspaceManager {
     })
 
     await this.workspaceStructure.start()
-    const ids = this.getPageIDs()
+    const ids = this.getPageIDsSorted()
     if (ids.length > 0) {
       this.stateManager.switchToPage(ids[0]!)
     } else {
@@ -101,7 +114,7 @@ export class WorkspaceManager implements IWorkspaceManager {
       if (!page) return
       if (id == this.getCurrentPageId()) {
         await this.stateManager.saveCurrentPage()
-        if (this.getPageIDs().length > 0) {
+        if (this.getPageIDs().length > 1) {
           if (!await this.stateManager.switchToPage(this.getPageIDs().find(a => a != id)!))
             return
         } else {
@@ -162,12 +175,20 @@ export class WorkspaceManager implements IWorkspaceManager {
     return this.workspaceStructure.getStructure()
   }
 
+  getTrashStructure(): number[] {
+    return this.workspaceStructure.getTrashStructure()
+  }
+
   getPageMap(): Map<number, Page> {
     return this.workspaceStructure.getPageMap()
   }
 
   getFolderMap(): Map<number, Folder> {
     return this.workspaceStructure.getFolderMap()
+  }
+
+  getPageTrashMap(): Map<number, Page> {
+    return this.workspaceStructure.getPageTrashMap()
   }
 
   getCurrentPageId(): number | null {

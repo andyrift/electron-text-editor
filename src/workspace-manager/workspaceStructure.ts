@@ -15,9 +15,11 @@ export type StructureHierarchy = Array<StructurePage | StructureFolder>
 export interface IWorkspaceStructure {
   getPageMap(): Map<number, Page>
   getFolderMap(): Map<number, Folder>
+  getPageTrashMap(): Map<number, Page>
   getPageIDs(): number[]
   getPageIDsSorted(): number[]
   getStructure(): StructureHierarchy
+  getTrashStructure(): number[]
   start(): Promise<void>
 }
 
@@ -28,12 +30,14 @@ export class WorkspaceStructure implements IWorkspaceStructure {
   folders = new Map<number, Folder>()
 
   structure: StructureHierarchy = []
+  trash_structure: number[] = []
 
   pubSub = PubSub.getInstance()
 
   queue: (() => Promise<void> | void)[] = []
   executing = false
   recalculate = false
+  recalculateT = false
 
   constructor() {
     this.pubSub.subscribe("page-created", (id: number) => {
@@ -106,18 +110,26 @@ export class WorkspaceStructure implements IWorkspaceStructure {
   private async init() {
     const pages = await window.invoke("db:getAllPages", false)
     const folders = await window.invoke("db:getAllFolders")
+    const pages_trash = await window.invoke("db:getAllPages", true)
 
     if (!pages.status) return
     if (!folders.status) return
+    if (!pages_trash.status) return
 
     pages.value.forEach(page => {
       this.pages.set(page.id, page)
     })
+
     folders.value.forEach(folder => {
       this.folders.set(folder.id, folder)
     })
 
+    pages_trash.value.forEach(page => {
+      this.pages_trash.set(page.id, page)
+    })
+
     this.recalculateStructure(false)
+    this.recalculateTrash(false)
 
     this.pubSub.emit("workspace-structure-init-end")
   }
@@ -130,12 +142,15 @@ export class WorkspaceStructure implements IWorkspaceStructure {
   private async update() {
     const pages = await window.invoke("db:getAllPages", false)
     const folders = await window.invoke("db:getAllFolders")
+    const pages_trash = await window.invoke("db:getAllPages", true)
 
     if (!pages.status) return
     if (!folders.status) return
+    if (!pages_trash.status) return
 
     this.pages.clear()
     this.folders.clear()
+    this.pages_trash.clear()
 
     pages.value.forEach(page => {
       this.pages.set(page.id, page)
@@ -143,8 +158,12 @@ export class WorkspaceStructure implements IWorkspaceStructure {
     folders.value.forEach(folder => {
       this.folders.set(folder.id, folder)
     })
+    pages_trash.value.forEach(page => {
+      this.pages_trash.set(page.id, page)
+    })
 
     this.recalculateStructure(true)
+    this.recalculateTrash(true)
   }
 
   private addToQueue(foo: typeof this.queue[number]) {
@@ -162,6 +181,10 @@ export class WorkspaceStructure implements IWorkspaceStructure {
     if (this.recalculate) {
       this.recalculateStructure(true)
       this.recalculate = false
+    }
+    if (this.recalculateT) {
+      this.recalculateTrash(true)
+      this.recalculateT = false
     }
     this.executing = false
   }
@@ -204,9 +227,28 @@ export class WorkspaceStructure implements IWorkspaceStructure {
     return str
   }
 
+  private calculateTrash(): number[] {
+    return Array.from(this.pages_trash.keys()).sort((a, b) => {
+      const left = this.pages_trash.get(a)?.deleted
+      const right = this.pages_trash.get(b)?.deleted
+      if (left === null || right === null || left === undefined || right === undefined) {
+        return 0
+      } else {
+        if (left < right) return 1
+        if (left > right) return -1
+        return 0
+      }
+    })
+  }
+
   private recalculateStructure(emit: boolean) {
     this.structure = this.calculateContent(null)
-    if(emit) this.pubSub.emit("workspace-structure-changed", this.structure)
+    if (emit) this.pubSub.emit("workspace-structure-changed", this.structure)
+  }
+
+  private recalculateTrash(emit: boolean) {
+    this.trash_structure = this.calculateTrash()
+    if (emit) this.pubSub.emit("workspace-trash-changed")
   }
 
   private async pageCreated(id: number) {
@@ -234,21 +276,32 @@ export class WorkspaceStructure implements IWorkspaceStructure {
   }
 
   private async pageTrashed(id: number) {
-    this.pages.delete(id)
+    const page = await window.invoke("db:getPage", id)
+    if (!page.status) throw "Page not found, could not update structure"
+    if (page.value) {
+      this.pages_trash.set(id, page.value)
+      this.pages.delete(id)
+    } 
     this.recalculate = true
+    this.recalculateT = true
   }
 
   private async pageRestored(id: number) {
     const page = await window.invoke("db:getPage", id)
     if (!page.status) return
-    if (page.value) this.pages.set(id, page.value)
+    if (page.value) {
+      this.pages.set(id, page.value)
+      this.pages_trash.delete(id)
+    } 
     else this.pages.delete(id)
     this.recalculate = true
+    this.recalculateT = true
   }
 
   private async pageDeleted(id: number) {
     this.pages.delete(id)
-    this.recalculate = true
+    this.pages_trash.delete(id)
+    this.recalculateT = true
   }
 
   private async folderCreated(id: number) {
@@ -312,12 +365,20 @@ export class WorkspaceStructure implements IWorkspaceStructure {
     return this.structure
   }
 
+  getTrashStructure(): number[] {
+    return this.trash_structure
+  }
+
   getPageMap(): Map<number, Page> {
     return this.pages
   }
 
   getFolderMap(): Map<number, Folder> {
     return this.folders
+  }
+
+  getPageTrashMap(): Map<number, Page> {
+    return this.pages_trash
   }
 
 }
