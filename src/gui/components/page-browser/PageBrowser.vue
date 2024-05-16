@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-full px-2 text-sm bg-white" :class="selectMode ? 'border-2 border-blue-400' : ''" @drop="handleDrop"
-    @dragover="handleDragover">
+  <div class="min-h-full px-2 text-sm bg-white -outline-offset-2"
+    :class="selectMode ? 'outline-blue-400 outline outline-2' : 'outline-none'" @drop="handleDrop" @dragover="handleDragover">
     <div @selectpage.stop="handleSelectPage" @deletepage.stop="handleDeletePage">
       <template v-for="item in browserStructure" :key="item.key">
         <BrowserFolder v-if="item.type == 'folder'" key="folders" :itemid="item.id" :open="item.open" :name="item.name"
