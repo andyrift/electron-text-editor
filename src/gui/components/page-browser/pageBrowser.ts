@@ -89,7 +89,6 @@ export function updateNameInStructure(structure: BrowserHierarchy, id: number, n
   structure.forEach(item => {
     if ("content" in item) {
       if (item.id == id) {
-        console.log(id, name)
         item.name = name
       }
       else updateNameInStructure(item.content, id, name)

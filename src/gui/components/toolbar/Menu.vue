@@ -16,28 +16,28 @@
         </div>
         <div class="text-sm border-b-2 flex flex-col p-1">
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
-            @click="pubSub.emit('toggle-querier'); show = false;">
-            <i class="fa-solid fa-bug mr-2"></i> Toggle Querier
-          </div>
-          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('toggle-dev-tools'); show = false;">
             <i class="fa-solid fa-terminal mr-2"></i> Toggle Developer Tools
           </div>
+          <!-- <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+            @click="pubSub.emit('toggle-querier'); show = false;">
+            <i class="fa-solid fa-bug mr-2"></i> Toggle Querier
+          </div> -->
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('reload-window'); show = false;">
             <i class="fa-solid fa-rotate-right mr-2"></i> Reload
           </div>
-          <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
+          <!-- <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('force-reload-window'); show = false;">
             <i class="fa-solid fa-rotate-right mr-2"></i> Force Reload
-          </div>
+          </div> -->
         </div>
-        <div class="text-sm border-b-2 flex flex-col p-1">
+        <!-- <div class="text-sm border-b-2 flex flex-col p-1">
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('workspace-structure-update'); show = false;">
             <i class="fa-solid fa-rotate-right mr-2"></i> Update Page Browser
           </div>
-        </div>
+        </div> -->
         <div class="py-1 px-3">
           <div class="w-fit h-fit bg-white flex-col text-xs font-normal text-zinc-500 cursor-default">
             <div>

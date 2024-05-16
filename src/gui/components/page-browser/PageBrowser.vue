@@ -113,7 +113,6 @@ pubSub.subscribe("current-page-changed", (id: number) => {
   if (!page) return
   let current: number | null = page.folder
   while (current !== null) {
-    console.log("check", current)
     folderOpen.value[current] = true
     const folder = folders.get(current)
     if (!folder) break

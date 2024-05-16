@@ -82,16 +82,6 @@ export class WorkspaceManager implements IWorkspaceManager {
   }
 
   async init() {
-    this.pubSub.subscribe("workspace-structure-init-end", () => {
-      console.log("workspace-structure-init-end")
-    })
-    this.pubSub.subscribe("state-manager-init-end", () => {
-      console.log("state-manager-init-end")
-    })
-    this.pubSub.subscribe("workspace-manager-init-end", () => {
-      console.log("workspace-manager-init-end")
-    })
-
     await this.workspaceStructure.start()
     const ids = this.getPageIDsSorted()
     if (ids.length > 0) {
