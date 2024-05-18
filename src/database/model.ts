@@ -25,12 +25,17 @@ export type PageData = {
   editor_state: EditorStateJson
 }
 
-// Template model types
+export type DBResponse<T> = { 
+  status: true, 
+  value: T 
+} | { 
+  status: false, 
+  value: string 
+}
 
-export type DBResponse<T> = { status: true, value: T } | { status: false, value: string }
-type DBPromise<T> = Promise<DBResponse<T>>
+export type DBPromise<T> = Promise<DBResponse<T>>
 
-export interface DBModelMethods {
+export interface IDBModel {
   run(query: string): DBPromise<any>
   get(query: string): DBPromise<any>
   all(query: string): DBPromise<any[]>
@@ -59,7 +64,7 @@ export interface DBModelMethods {
   changeFolderFolder(child: number, parent: number | null): DBPromise<RunResult>
 }
 
-export class DBModel implements DBModelMethods {
+export class DBModel implements IDBModel {
   db: Database
 
   async init() {
@@ -337,8 +342,6 @@ export class DBModel implements DBModelMethods {
       return { status: false, value: err.toString() }
     }
   }
-
-
 
   methods = {
     run: this.run,
