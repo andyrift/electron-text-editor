@@ -31,14 +31,15 @@ export class CheckView implements NodeView {
     this.dom = document.createElement("check")
     this.contentDOM = document.createElement("div")
 
-    this.dom.classList.add(..."my-1 text-base bg-opacity-30 block flex flex-nowrap".split(' '))
+    this.dom.classList.add(..."my-1 text-base bg-opacity-30 block".split(' '))
     this.dom.classList.add('bg-' + colors[this.bgcolor]!.class)
 
     let icon = document.createElement('i')
-    icon.classList.add(..."ml-0.5 mr-1.5 text-md block cursor-pointer align-top mt-1 h-full flex-none".split(' '))
+    icon.classList.add(..."ml-0.5 mr-1.5 text-md inline-block cursor-pointer align-top mt-1 h-fit".split(' '))
     icon.style.zIndex = '3'
+    icon.contentEditable = "false"
 
-    this.contentDOM.classList.add(...'min-w-1 min-h-1'.split(' '))
+    this.contentDOM.classList.add(...'inline-block min-w-1 min-h-1 grow'.split(' '))
 
     if (this.check == 'true') {
       icon.classList.add("fa-solid")
@@ -60,7 +61,7 @@ export class CheckView implements NodeView {
       if (pos) cmd.toggleCheck(pos)(view.state, view.dispatch)
     })
 
-    this.dom.appendChild(icon)
-    this.dom.appendChild(this.contentDOM)
+  this.dom.appendChild(icon)
+  this.dom.appendChild(this.contentDOM)
   }
 }
