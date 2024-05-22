@@ -170,19 +170,18 @@ export function setPageLink(pos: number, id: number | null) {
 }
 
 /// Deletes current selection, or, if it is empty, current block
-export const deleteCurrent = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {
+export function deleteCurrent (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean {
   if (dispatch) {
-    let tr = state.tr;
-    let sel = tr.selection;
+    const tr = state.tr
+    const sel = tr.selection
     if (sel.empty) {
-      let before = sel.$anchor.before()
+      const before = sel.$anchor.before()
       tr.setSelection(NodeSelection.create(tr.doc, before))
     }
     tr.deleteSelection()
     dispatch(tr.scrollIntoView())
   }
-
-  return true;
+  return true
 }
 
 export const checkToParagraph = (state: EditorState, dispatch: ((tr: Transaction) => void) | undefined): boolean => {

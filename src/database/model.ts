@@ -184,9 +184,15 @@ export class DBModel implements IDBModel {
     const query = "select id, title, last_saved, deleted, folder from pages where id = :id"
     let params = { id }
     try {
-      return { status: true, value: await this.db.prepare(query).get(params) as Page }
+      return { 
+        status: true, 
+        value: await this.db.prepare(query).get(params) as Page 
+      }
     } catch (err: any) {
-      return { status: false, value: err.toString() }
+      return { 
+        status: false, 
+        value: err.toString() 
+      }
     }
   }
 
