@@ -14,7 +14,7 @@
             <i class="fa-solid fa-trash-can mr-2"></i> Delete
           </div>
         </div>
-        <div class="text-sm border-b-2 flex flex-col p-1">
+        <div class="text-sm /border-b-2 flex flex-col p-1">
           <div class="px-2 py-1 hover:bg-zinc-200 cursor-pointer rounded"
             @click="pubSub.emit('toggle-dev-tools'); show = false;">
             <i class="fa-solid fa-terminal mr-2"></i> Toggle Developer Tools
@@ -38,7 +38,7 @@
             <i class="fa-solid fa-rotate-right mr-2"></i> Update Page Browser
           </div>
         </div> -->
-        <div class="py-1 px-3">
+        <!-- <div class="py-1 px-3">
           <div class="w-fit h-fit bg-white flex-col text-xs font-normal text-zinc-500 cursor-default">
             <div>
               Word Count: {{ null || 0 }}
@@ -47,7 +47,7 @@
               Character Count: {{ null || 0 }}
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </Transition>
   </div>
