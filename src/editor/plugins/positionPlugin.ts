@@ -1,10 +1,21 @@
 import { Plugin } from "prosemirror-state"
-import { Ref } from "vue"
 
-export const positionPlugin = (rectanglesRef: Ref<any>) => {
+export type Position = {
+  pos: number
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+export interface IPositionState {
+  setPositions(positions: Position[]): void
+}
+
+export const positionPlugin = (positionState: IPositionState) => {
   return new Plugin({
-    view: (view) => {
-      let ignore = [
+    view: () => {
+      const ignore = [
         'text',
         'column',
         'table_cell',
@@ -14,59 +25,44 @@ export const positionPlugin = (rectanglesRef: Ref<any>) => {
         'title',
         'list_item'
       ]
+      const only_top = [
+        "column_list",
+        "table",
+        "ordered_list",
+        "bullet_list"
+      ]
+      const item_height = 24
+      const horizontal_offset = 12
       return {
-        update: (view, prevState) => {
-          let items: any[] = []
+        update: (view) => {
+          const positions: Position[] = []
           view.state.doc.descendants((node, pos) => {
-            if (ignore.includes(node.type.name)) return;
-            /*
-            if (view.state.doc.resolve(pos).parent.type.name == "list_item") {
-              if (view.state.doc.resolve(pos).nodeBefore?.type.name != "paragraph" &&
-                view.state.doc.resolve(pos).parent.childCount == 1) {
-                return
-              }
+            if (ignore.includes(node.type.name)) return
+            const dom = view.nodeDOM(pos) as HTMLElement
+            if (!dom) return
+            
+            const coords = view.coordsAtPos(pos)
+            const type = node.type.name
+
+            let left = coords.left
+            let top = coords.top
+            let height = dom.clientHeight
+            let width = dom.clientWidth
+            if (only_top.includes(type)) {
+              height = item_height
             }
-            if (node.childCount > 1 && node.type.name == "list_item") return*/
-            let coords = view.coordsAtPos(pos);
-            let dom = view.nodeDOM(pos)
-            let type = node.type.name;
-            let item = {
-              pos,
-              coords,
-              dom,
-              type
+            if (type == "table") {
+              left -= horizontal_offset
+              width += horizontal_offset
             }
-            items.push(item)
+            if (type == "column_list") {
+              left -= horizontal_offset
+              width += horizontal_offset
+              height = 32
+            }
+            positions.push({ pos, left, top, width, height })
           })
-          let rectangles: any[] = []
-          items.forEach(item => {
-            let left = item.coords.left;
-            let top = item.coords.top;
-            let height = item.dom.clientHeight
-            let width = item.dom.clientWidth
-            let only_top = [
-              "column_list",
-              "table",
-              "ordered_list",
-              "bullet_list"
-            ]
-            if (only_top.includes(item.type)) {
-              height = 24;
-            }
-            if (item.type == "table") {
-              let offset = 12
-              left -= offset;
-              width += offset;
-            }
-            if (item.type == "column_list") {
-              let offset = 12
-              left -= offset;
-              width += offset;
-              height = 32;
-            }
-            rectangles.push({ pos: item.pos, left, top, width, height });
-          })
-          rectanglesRef.value = rectangles
+          positionState.setPositions(positions)
         }
       }
     }

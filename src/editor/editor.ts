@@ -1,4 +1,4 @@
-import { EditorState, type EditorStateConfig, Plugin } from "prosemirror-state"
+import { EditorState, type EditorStateConfig, NodeSelection, Plugin } from "prosemirror-state"
 import { type DirectEditorProps, EditorView } from "prosemirror-view"
 
 import { Node, Schema } from "prosemirror-model"
@@ -6,7 +6,7 @@ import { Node, Schema } from "prosemirror-model"
 import {
   keymapPlugin,
   menuPlugin,
-  wordCountPlugin,
+  // wordCountPlugin,
   dropCursor,
   hintPlugin,
   tabInterceptPlugin,
@@ -17,9 +17,8 @@ import {
   columnResizing,
   history,
 
-  // in testing
-  dragPlugin,
-  posPlugin
+  dropPlugin,
+  positionPlugin
 } from "./plugins"
 
 import { schema } from "./schema"
@@ -31,6 +30,7 @@ import { CheckView, PageLinkView, TableView, TitleView } from "./node-views"
 
 import { DocumentJson, EditorStateJson } from "@src/database/model"
 import { PubSub } from "@src/pubSub"
+import { PositionState } from "./positionState"
 
 export class Editor {
   private plugins: Plugin[]
@@ -39,6 +39,7 @@ export class Editor {
   private view: EditorView | null = null
 
   private menuState: MenuState
+  private positionState: PositionState
 
   private actionPos: number | null = null
 
@@ -58,6 +59,7 @@ export class Editor {
     this.commands = new Commands(schema)
 
     this.menuState = new MenuState(schema, this.commands)
+    this.positionState = new PositionState()
 
     this.plugins = [
       gapCursor(),
@@ -69,13 +71,13 @@ export class Editor {
       hintPlugin("Write something..."),
       // titleUpdatePlugin(this.emitTitleUpdate),
       // stateUpdatePlugin(this.emitStateUpdate),
-      // dragPlugin(),
+      dropPlugin(),
       listFixPlugin(),
       columnResizing(),
       tableEditing({ allowTableNodeSelection: true }),
       history(),
       tabInterceptPlugin(),
-      // posPlugin(this.rectangles),
+      positionPlugin(this.positionState),
     ]
 
     document.execCommand('enableObjectResizing', false, 'false')
@@ -171,8 +173,21 @@ export class Editor {
     return this.menuState
   }
 
+  getPositionState() {
+    return this.positionState
+  }
+
   hasView() {
     return this.view !== null
+  }
+
+  focus() {
+    this.view?.focus()
+  }
+
+  selectNodeAtPos(pos: number) {
+    if (this.view !== null)
+      this.view.dispatch(this.view.state.tr.setSelection(NodeSelection.create(this.view.state.doc, pos)))
   }
 
 }
